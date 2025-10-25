@@ -1,0 +1,17 @@
+# Python dependencies for Big Data Analytics project
+
+# Spark dependencies
+pyspark==3.5.0
+
+# Kafka dependencies
+kafka-python==2.0.2
+
+# Flink dependencies
+apache-flink==1.18.0
+
+# Hadoop dependencies (mrjob for MapReduce jobs)
+mrjob==0.7.4
+
+# General utilities
+numpy==1.24.3
+pandas==2.0.3
