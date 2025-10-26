@@ -16,6 +16,9 @@ RUN curl -L https://archive.apache.org/dist/flink/flink-${FLINK_VERSION}/flink-$
     | tar -xz -C /opt/ && \
     mv /opt/flink-${FLINK_VERSION} ${FLINK_HOME}
 
+# Copy Flink configuration
+COPY config/* $FLINK_HOME/conf/
+
 # Install PyFlink
 RUN pip3 install --no-cache-dir apache-flink==${FLINK_VERSION}
 
