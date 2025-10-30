@@ -17,7 +17,32 @@ This directory contains Python example scripts for each big data technology.
 python3 hadoop_wordcount.py input.txt
 ```
 
-### 2. spark_example.py
+### 2. hadoop_indegree.py
+**Purpose**: Computes in-degree distribution for directed graphs using two-stage MapReduce
+
+**Features**:
+- Stage 1: Calculate individual node in-degrees
+- Stage 2: Calculate distribution of in-degrees
+- Handles large-scale graph datasets
+- Skips comment lines (starting with #)
+
+**Usage**:
+```bash
+# Local mode
+python3 hadoop_indegree.py graph_edges.txt
+
+# With HDFS
+python3 hadoop_indegree.py hdfs:///user/root/snap_datasets/email-EuAll/email-EuAll.txt
+
+# Using Makefile
+make test-hadoop-indegree
+```
+
+**Input Format**: Each line represents a directed edge: `source destination`
+
+**Output Format**: `(in_degree, count)` - number of nodes with each in-degree value
+
+### 3. spark_example.py
 **Purpose**: Demonstrates Apache Spark operations with PySpark
 
 **Features**:
@@ -35,7 +60,7 @@ python3 spark_example.py
 spark-submit --master spark://spark-master:7077 spark_example.py
 ```
 
-### 3. kafka_example.py
+### 4. kafka_example.py
 **Purpose**: Demonstrates Kafka producer and consumer operations
 
 **Features**:
@@ -51,7 +76,7 @@ python3 kafka_example.py
 
 **Note**: Requires Kafka broker to be running at kafka:9092
 
-### 4. flink_example.py
+### 5. flink_example.py
 **Purpose**: Demonstrates Apache Flink stream processing
 
 **Features**:

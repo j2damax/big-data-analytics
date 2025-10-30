@@ -58,6 +58,13 @@ test-kafka: ## Run Kafka example
 test-flink: ## Run Flink example
 	docker exec -it flink-jobmanager python3 /scripts/flink_example.py
 
+test-hadoop: ## Run Hadoop MapReduce example
+	docker exec -it hadoop python3 /scripts/hadoop_wordcount.py /scripts/sample_data.txt
+
+test-hadoop-indegree: ## Run Hadoop in-degree distribution MapReduce job
+	@echo "Running in-degree distribution computation on email-EuAll dataset..."
+	docker exec hadoop python3 /scripts/hadoop_indegree.py hdfs:///user/root/snap_datasets/email-EuAll/email-EuAll.txt
+
 test-all: ## Run all examples
 	@echo "Running Spark example..."
 	-docker exec spark-master python3 /scripts/spark_example.py
