@@ -2,7 +2,7 @@
 # Demo script for In-Degree Distribution MapReduce computation
 # This script demonstrates the usage with sample graph datasets
 
-set -e
+set -euo pipefail
 
 echo "=========================================="
 echo "In-Degree Distribution Demo"
@@ -99,13 +99,11 @@ echo "Running MapReduce..."
 python3 scripts/hadoop_indegree.py /tmp/simple_graph.txt 2>/dev/null
 echo ""
 echo "Interpretation:"
-echo "  - 1 node has in-degree 1 (nodes: 2, 4, 5)"
-echo "  - Wait, let me recalculate..."
 echo "  Node 2: in-degree 1 (from 1)"
 echo "  Node 3: in-degree 2 (from 1, 2)"
 echo "  Node 4: in-degree 1 (from 3)"
 echo "  Node 5: in-degree 1 (from 4)"
-echo "  → 3 nodes with in-degree 1, 1 node with in-degree 2"
+echo "  → Result: 3 nodes with in-degree 1, 1 node with in-degree 2"
 echo ""
 
 # Test 2: Star graph
