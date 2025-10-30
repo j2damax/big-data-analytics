@@ -275,14 +275,43 @@ def ingest_datasets(dataset_names: Optional[List[str]] = None, skip_validation: 
     """
     ingestor = DatasetIngestor()
     
+    # Check what files are available in raw directory
+    raw_files = list(ingestor.raw_dir.glob("*.gz"))
+    if not raw_files:
+        logger.error(f"No .gz files found in raw directory: {ingestor.raw_dir}")
+        logger.error("Please manually download dataset files to the raw directory first.")
+        return False
+    
+    logger.info(f"Found {len(raw_files)} .gz files in raw directory:")
+    for file in raw_files:
+        logger.info(f"  - {file.name}")
+    
     # Determine which datasets to ingest
     if dataset_names:
         datasets_to_ingest = {name: DATASETS[name] for name in dataset_names if name in DATASETS}
         invalid_names = set(dataset_names) - set(DATASETS.keys())
         if invalid_names:
             logger.warning(f"Invalid dataset names: {invalid_names}")
+            
+        # Check if requested files exist
+        missing_files = []
+        for name, config in datasets_to_ingest.items():
+            if not (ingestor.raw_dir / config['filename']).exists():
+                missing_files.append(config['filename'])
+        
+        if missing_files:
+            logger.error(f"Missing files for requested datasets: {missing_files}")
+            return False
     else:
-        datasets_to_ingest = DATASETS
+        # Filter to only datasets where files actually exist
+        available_datasets = {}
+        for name, config in DATASETS.items():
+            if (ingestor.raw_dir / config['filename']).exists():
+                available_datasets[name] = config
+            else:
+                logger.info(f"Skipping {name}: file {config['filename']} not found in raw directory")
+        
+        datasets_to_ingest = available_datasets
     
     logger.info(f"Starting ingestion of {len(datasets_to_ingest)} dataset(s)")
     
@@ -325,18 +354,24 @@ def ingest_datasets(dataset_names: Optional[List[str]] = None, skip_validation: 
 def main():
     """Main entry point for the script."""
     parser = argparse.ArgumentParser(
-        description='Ingest and validate SNAP datasets',
+        description='Ingest and validate SNAP datasets from manually downloaded files',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Ingest all datasets
+  # List available files in raw directory
+  python ingest_datasets.py --list
+  
+  # Ingest all available datasets
   python ingest_datasets.py
   
   # Ingest specific datasets
   python ingest_datasets.py --datasets soc-Pokec email-EuAll
   
-  # Skip validation
+  # Skip validation for faster processing
   python ingest_datasets.py --skip-validation
+
+Note: This script processes manually downloaded .gz files from data/raw directory.
+Place your downloaded SNAP dataset files there before running.
         """
     )
     
@@ -344,16 +379,48 @@ Examples:
         '--datasets',
         nargs='+',
         choices=list(DATASETS.keys()),
-        help='Specific datasets to ingest (default: all)'
+        help='Specific datasets to ingest (default: all available)'
     )
     
     parser.add_argument(
         '--skip-validation',
         action='store_true',
-        help='Skip validation step'
+        help='Skip validation step for faster processing'
+    )
+    
+    parser.add_argument(
+        '--list',
+        action='store_true',
+        help='List available files in raw directory and exit'
     )
     
     args = parser.parse_args()
+    
+    # Handle --list option
+    if args.list:
+        raw_dir = Path(RAW_DATA_DIR)
+        raw_files = list(raw_dir.glob("*.gz"))
+        
+        if not raw_files:
+            print(f"No .gz files found in: {raw_dir}")
+            print("Please manually download SNAP dataset files to this directory.")
+        else:
+            print(f"Available files in {raw_dir}:")
+            for file in sorted(raw_files):
+                # Try to match with known datasets
+                matching_dataset = None
+                for name, config in DATASETS.items():
+                    if config['filename'] == file.name:
+                        matching_dataset = name
+                        break
+                
+                size_mb = file.stat().st_size / (1024 * 1024)
+                if matching_dataset:
+                    print(f"  ✓ {file.name} ({size_mb:.1f}MB) -> {matching_dataset}")
+                else:
+                    print(f"  ? {file.name} ({size_mb:.1f}MB) -> Unknown dataset")
+        
+        sys.exit(0)
     
     # Run ingestion
     success = ingest_datasets(dataset_names=args.datasets, skip_validation=args.skip_validation)

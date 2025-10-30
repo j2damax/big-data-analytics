@@ -21,36 +21,36 @@ The pipeline supports four major SNAP datasets:
 | **cit-Patents** | US patent citation network | 3.8M | 16.5M | 161MB | Citation |
 | **soc-LiveJournal1** | LiveJournal social network | 4.8M | 69.0M | 467MB | Social Network |
 
-## 🚀 Quick Start
+## Quick Start
 
-### Run Complete Pipeline
-
-The easiest way to run the entire pipeline:
+Simple 2-step process:
 
 ```bash
-# From the repository root
 cd scripts/data_pipeline
 
-# Run complete pipeline for all datasets
-python run_pipeline.py
-
-# Run for specific datasets only
-python run_pipeline.py --datasets soc-Pokec email-EuAll
-```
-
-### Individual Steps
-
-You can also run each step separately:
-
-```bash
-# Step 1: Download datasets
-python download_datasets.py
-
-# Step 2: Ingest and validate
+# Step 1: Extract and validate datasets
 python ingest_datasets.py
 
-# Step 3: Load to HDFS
+# Step 2: Upload to HDFS
 python load_to_hdfs.py
+```
+
+**Note**: Download .gz files manually to `data/raw/` directory first.
+
+### Advanced Usage
+
+```bash
+# List available files before processing
+python ingest_datasets.py --list
+
+# Process specific datasets only
+python ingest_datasets.py --datasets soc-Pokec email-EuAll
+
+# Test HDFS upload without actually uploading
+python load_to_hdfs.py --dry-run
+
+# Upload specific datasets
+python load_to_hdfs.py --datasets soc-Pokec
 ```
 
 ## 📖 Detailed Usage

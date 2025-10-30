@@ -255,7 +255,8 @@ class HDFSLoader:
 def load_datasets(
     dataset_names: Optional[List[str]] = None,
     replication: int = 3,
-    overwrite: bool = False
+    overwrite: bool = False,
+    dry_run: bool = False
 ) -> bool:
     """
     Load specified datasets or all datasets into HDFS.
@@ -264,21 +265,37 @@ def load_datasets(
         dataset_names: List of dataset names to load, or None for all
         replication: HDFS replication factor
         overwrite: If True, overwrite existing files
+        dry_run: If True, only show what would be done without actually uploading
         
     Returns:
         True if all uploads successful, False otherwise
     """
     loader = HDFSLoader()
     
-    # Test HDFS connection
-    if not loader.test_hdfs_connection():
-        logger.error("Cannot connect to HDFS. Make sure Hadoop is running.")
+    # Check what processed files are available
+    processed_files = list(loader.processed_dir.glob("*.txt"))
+    if not processed_files:
+        logger.error(f"No processed files found in: {loader.processed_dir}")
+        logger.error("Please run ingest_datasets.py first to extract the .gz files.")
         return False
     
-    # Create base directory
-    if not loader.create_hdfs_directory(HDFS_BASE_PATH):
-        logger.error("Failed to create base directory in HDFS")
-        return False
+    logger.info(f"Found {len(processed_files)} processed files:")
+    for file in processed_files:
+        logger.info(f"  - {file.name}")
+    
+    # Test HDFS connection (skip if dry run)
+    if not dry_run:
+        if not loader.test_hdfs_connection():
+            logger.error("Cannot connect to HDFS. Make sure Hadoop is running.")
+            logger.info("Tip: Use --dry-run to test the workflow without HDFS")
+            return False
+        
+        # Create base directory
+        if not loader.create_hdfs_directory(HDFS_BASE_PATH):
+            logger.error("Failed to create base directory in HDFS")
+            return False
+    else:
+        logger.info("DRY RUN MODE: Skipping HDFS connection test")
     
     # Determine which datasets to load
     if dataset_names:
@@ -286,8 +303,29 @@ def load_datasets(
         invalid_names = set(dataset_names) - set(DATASETS.keys())
         if invalid_names:
             logger.warning(f"Invalid dataset names: {invalid_names}")
+            
+        # Check if requested processed files exist
+        missing_files = []
+        for name, config in datasets_to_load.items():
+            processed_filename = config['filename'][:-3]  # Remove .gz
+            if not (loader.processed_dir / processed_filename).exists():
+                missing_files.append(processed_filename)
+        
+        if missing_files:
+            logger.error(f"Missing processed files: {missing_files}")
+            logger.error("Please run ingest_datasets.py first for these datasets.")
+            return False
     else:
-        datasets_to_load = DATASETS
+        # Filter to only datasets where processed files actually exist
+        available_datasets = {}
+        for name, config in DATASETS.items():
+            processed_filename = config['filename'][:-3]  # Remove .gz
+            if (loader.processed_dir / processed_filename).exists():
+                available_datasets[name] = config
+            else:
+                logger.info(f"Skipping {name}: processed file {processed_filename} not found")
+        
+        datasets_to_load = available_datasets
     
     logger.info(f"Starting upload of {len(datasets_to_load)} dataset(s) to HDFS")
     
@@ -309,36 +347,49 @@ def load_datasets(
         
         # Create dataset-specific directory in HDFS
         hdfs_dir = f"{HDFS_BASE_PATH}/{name}"
-        if not loader.create_hdfs_directory(hdfs_dir):
-            logger.error(f"Failed to create directory: {hdfs_dir}")
-            continue
-        
-        # Upload file
         hdfs_path = f"{hdfs_dir}/{local_filename}"
-        if loader.upload_file(local_path, hdfs_path, replication, overwrite):
-            # Verify upload
-            if loader.verify_upload(hdfs_path, local_path.stat().st_size):
-                success_count += 1
-                logger.info(f"✓ {name} loaded to HDFS successfully\n")
-                
-                # Display file info
-                info = loader.get_hdfs_file_info(hdfs_path)
-                if info:
-                    logger.info(f"  HDFS path: {hdfs_path}")
-                    logger.info(f"  Size: {info['size'] / (1024*1024):.2f}MB")
-                    logger.info(f"  Replication: {info['replication']}")
-            else:
-                logger.error(f"✗ {name} verification failed\n")
+        
+        if dry_run:
+            # Dry run: just show what would be done
+            file_size_mb = local_path.stat().st_size / (1024 * 1024)
+            success_count += 1
+            logger.info(f"✓ {name} would be loaded to HDFS (DRY RUN)")
+            logger.info(f"  Local file: {local_path} ({file_size_mb:.2f}MB)")
+            logger.info(f"  HDFS destination: {hdfs_path}")
+            logger.info(f"  Replication factor: {replication}\n")
         else:
-            logger.error(f"✗ {name} upload failed\n")
+            # Actual upload
+            if not loader.create_hdfs_directory(hdfs_dir):
+                logger.error(f"Failed to create directory: {hdfs_dir}")
+                continue
+            
+            # Upload file
+            if loader.upload_file(local_path, hdfs_path, replication, overwrite):
+                # Verify upload
+                if loader.verify_upload(hdfs_path, local_path.stat().st_size):
+                    success_count += 1
+                    logger.info(f"✓ {name} loaded to HDFS successfully\n")
+                    
+                    # Display file info
+                    info = loader.get_hdfs_file_info(hdfs_path)
+                    if info:
+                        logger.info(f"  HDFS path: {hdfs_path}")
+                        logger.info(f"  Size: {info['size'] / (1024*1024):.2f}MB")
+                        logger.info(f"  Replication: {info['replication']}")
+                else:
+                    logger.error(f"✗ {name} verification failed\n")
+            else:
+                logger.error(f"✗ {name} upload failed\n")
     
     # Summary
     logger.info(f"\n{'='*60}")
-    logger.info(f"HDFS Load Summary")
+    logger.info(f"HDFS Load Summary{' (DRY RUN)' if dry_run else ''}")
     logger.info(f"{'='*60}")
     logger.info(f"Successful: {success_count}/{len(datasets_to_load)}")
     logger.info(f"Failed: {len(datasets_to_load) - success_count}/{len(datasets_to_load)}")
     logger.info(f"HDFS base path: {HDFS_BASE_PATH}")
+    if dry_run:
+        logger.info("Note: This was a dry run. Use without --dry-run to actually upload.")
     logger.info(f"{'='*60}\n")
     
     return success_count == len(datasets_to_load)
@@ -347,11 +398,17 @@ def load_datasets(
 def main():
     """Main entry point for the script."""
     parser = argparse.ArgumentParser(
-        description='Load SNAP datasets into HDFS',
+        description='Load processed SNAP datasets into HDFS',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Load all datasets
+  # List available processed files
+  python load_to_hdfs.py --list
+  
+  # Test what would be loaded (dry run)
+  python load_to_hdfs.py --dry-run
+  
+  # Load all available datasets
   python load_to_hdfs.py
   
   # Load specific datasets
@@ -360,8 +417,12 @@ Examples:
   # Set custom replication factor
   python load_to_hdfs.py --replication 2
   
-  # Overwrite existing files
+  # Overwrite existing files in HDFS
   python load_to_hdfs.py --overwrite
+
+Note: This script loads processed .txt files from data/processed directory.
+Run ingest_datasets.py first to extract .gz files to .txt files.
+Use --dry-run to test without requiring HDFS to be running.
         """
     )
     
@@ -369,7 +430,7 @@ Examples:
         '--datasets',
         nargs='+',
         choices=list(DATASETS.keys()),
-        help='Specific datasets to load (default: all)'
+        help='Specific datasets to load (default: all available)'
     )
     
     parser.add_argument(
@@ -385,13 +446,53 @@ Examples:
         help='Overwrite existing files in HDFS'
     )
     
+    parser.add_argument(
+        '--list',
+        action='store_true',
+        help='List available processed files and exit'
+    )
+    
+    parser.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Show what would be done without actually uploading to HDFS'
+    )
+    
     args = parser.parse_args()
+    
+    # Handle --list option
+    if args.list:
+        processed_dir = Path(PROCESSED_DATA_DIR)
+        processed_files = list(processed_dir.glob("*.txt"))
+        
+        if not processed_files:
+            print(f"No processed .txt files found in: {processed_dir}")
+            print("Please run ingest_datasets.py first to extract .gz files.")
+        else:
+            print(f"Available processed files in {processed_dir}:")
+            for file in sorted(processed_files):
+                # Try to match with known datasets
+                matching_dataset = None
+                for name, config in DATASETS.items():
+                    expected_name = config['filename'][:-3]  # Remove .gz
+                    if expected_name == file.name:
+                        matching_dataset = name
+                        break
+                
+                size_mb = file.stat().st_size / (1024 * 1024)
+                if matching_dataset:
+                    print(f"  ✓ {file.name} ({size_mb:.1f}MB) -> {matching_dataset}")
+                else:
+                    print(f"  ? {file.name} ({size_mb:.1f}MB) -> Unknown dataset")
+        
+        sys.exit(0)
     
     # Run upload
     success = load_datasets(
         dataset_names=args.datasets,
         replication=args.replication,
-        overwrite=args.overwrite
+        overwrite=args.overwrite,
+        dry_run=args.dry_run
     )
     
     sys.exit(0 if success else 1)
