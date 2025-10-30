@@ -214,3 +214,8 @@ Thumbs.db
 .idea/
 .env/
 .pdm-python
+
+# Data pipeline - downloaded and processed datasets
+data/raw/
+data/processed/
+data_pipeline.log

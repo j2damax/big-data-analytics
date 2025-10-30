@@ -86,3 +86,29 @@ rebuild: ## Rebuild and restart all services
 	docker-compose down
 	docker-compose build --no-cache
 	docker-compose up -d
+
+# Data pipeline targets
+data-download: ## Download SNAP datasets
+	cd scripts/data_pipeline && python3 download_datasets.py
+
+data-ingest: ## Ingest and validate datasets
+	cd scripts/data_pipeline && python3 ingest_datasets.py
+
+data-load: ## Load datasets to HDFS (requires Hadoop running)
+	docker exec hadoop python3 /scripts/data_pipeline/load_to_hdfs.py
+
+data-pipeline: ## Run complete data pipeline
+	@echo "Starting complete data pipeline..."
+	cd scripts/data_pipeline && python3 download_datasets.py
+	cd scripts/data_pipeline && python3 ingest_datasets.py
+	@echo "Waiting for Hadoop to be ready..."
+	@sleep 5
+	docker exec hadoop python3 /scripts/data_pipeline/load_to_hdfs.py
+	@echo "Data pipeline completed!"
+
+data-status: ## Check status of datasets in HDFS
+	docker exec hadoop hadoop fs -ls -R /user/root/snap_datasets
+
+data-clean: ## Remove downloaded and processed datasets
+	rm -rf data/raw/* data/processed/*
+	@echo "Local datasets cleaned"
