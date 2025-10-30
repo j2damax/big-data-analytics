@@ -15,3 +15,7 @@ mrjob==0.7.4
 # General utilities
 numpy==1.24.3
 pandas==2.0.3
+
+# Data pipeline dependencies
+requests==2.31.0
+tqdm==4.66.1
