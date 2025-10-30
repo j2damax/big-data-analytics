@@ -208,3 +208,9 @@ __marimo__/
 
 .github/
 
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.env/
+.pdm-python
