@@ -65,6 +65,9 @@ test-hadoop-indegree: ## Run Hadoop in-degree distribution MapReduce job
 	@echo "Running in-degree distribution computation on email-EuAll dataset..."
 	docker exec hadoop python3 /scripts/hadoop_indegree.py hdfs:///user/root/snap_datasets/email-EuAll/email-EuAll.txt
 
+demo-indegree: ## Run in-degree distribution demo with sample graphs
+	@bash scripts/demo_indegree.sh
+
 test-all: ## Run all examples
 	@echo "Running Spark example..."
 	-docker exec spark-master python3 /scripts/spark_example.py

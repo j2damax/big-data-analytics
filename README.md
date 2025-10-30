@@ -165,6 +165,8 @@ make test-all    # Runs all examples in sequence with error handling
 | `make test-kafka` | **Kafka** | Producer/consumer messaging with JSON serialization |
 | `make test-flink` | **Flink** | Stream processing, windowing, and Table API operations |
 | `make test-hadoop` | **Hadoop** | MapReduce job execution with HDFS storage |
+| `make test-hadoop-indegree` | **Hadoop** | Two-stage MapReduce for graph in-degree distribution |
+| `make demo-indegree` | **Hadoop** | Interactive demo of in-degree computation with sample graphs |
 
 ### **Advanced Usage Patterns**
 
