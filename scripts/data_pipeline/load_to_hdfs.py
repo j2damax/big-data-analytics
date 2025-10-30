@@ -26,8 +26,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data_pipeline.config import (
     DATASETS,
     PROCESSED_DATA_DIR,
-    HDFS_HOST,
-    HDFS_PORT,
     HDFS_BASE_PATH,
     LOG_FORMAT,
     LOG_LEVEL,
@@ -51,8 +49,6 @@ class HDFSLoader:
     def __init__(
         self,
         processed_dir: str = PROCESSED_DATA_DIR,
-        hdfs_host: str = HDFS_HOST,
-        hdfs_port: int = HDFS_PORT,
         hdfs_base_path: str = HDFS_BASE_PATH
     ):
         """
@@ -60,19 +56,13 @@ class HDFSLoader:
         
         Args:
             processed_dir: Directory containing processed files
-            hdfs_host: HDFS namenode hostname
-            hdfs_port: HDFS namenode port
             hdfs_base_path: Base path in HDFS for datasets
         """
         self.processed_dir = Path(processed_dir)
-        self.hdfs_host = hdfs_host
-        self.hdfs_port = hdfs_port
         self.hdfs_base_path = hdfs_base_path
-        self.hdfs_url = f"hdfs://{hdfs_host}:{hdfs_port}"
         
         logger.info(f"HDFS loader initialized")
         logger.info(f"Processed directory: {self.processed_dir}")
-        logger.info(f"HDFS URL: {self.hdfs_url}")
         logger.info(f"HDFS base path: {self.hdfs_base_path}")
     
     def run_hdfs_command(self, command: List[str], check: bool = True) -> subprocess.CompletedProcess:
