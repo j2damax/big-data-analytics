@@ -45,7 +45,7 @@ logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),
     format=LOG_FORMAT,
     handlers=[
-        logging.FileHandler('data_pipeline.log'),
+        logging.FileHandler('data_pipeline.log', mode='a'),
         logging.StreamHandler(sys.stdout)
     ]
 )
