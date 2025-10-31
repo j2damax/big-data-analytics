@@ -51,7 +51,7 @@ Successfully implemented a two-stage MapReduce job to compute in-degree distribu
    - Performance estimates
    - Troubleshooting guide
 
-3. **`scripts/demo_indegree.sh`** (169 lines)
+3. **`scripts/demo_indegree.sh`** - REMOVED (no longer needed)
    - Interactive demo script
    - 3 test graph patterns
    - Automated verification

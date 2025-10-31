@@ -1,6 +1,8 @@
-# Example Scripts
+# Scripts Directory - Simplified Approach 🎯
 
-This directory contains Python example scripts for each big data technology.
+This directory contains the core implementation files for the big data analytics project, now streamlined for simplicity and effectiveness.
+
+## Core In-Degree Distribution Analysis
 
 ## Scripts Overview
 

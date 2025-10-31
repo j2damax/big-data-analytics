@@ -1,21 +1,18 @@
 # Python dependencies for Big Data Analytics project
 
-# Spark dependencies
-pyspark==3.5.0
+# Core in-degree computation (scripts/indegree/indegree_distribution.py)
+# No external dependencies required - uses only Python standard library
 
-# Kafka dependencies
-kafka-python==2.0.2
+# Academic framework implementations
+mrjob==0.7.4                    # Hadoop MapReduce (hadoop_indegree_mapreduce.py)
+pyspark==3.5.0                  # Apache Spark (spark_indegree_distributed.py)
+matplotlib==3.8.2               # Performance visualization (comprehensive_comparison.py)
+pandas==2.1.4                   # Data analysis support
 
-# Flink dependencies
-apache-flink==1.18.0
+# Original framework examples (optional)
+kafka-python==2.0.2             # Kafka example (kafka_example.py) 
+apache-flink==1.18.0            # Flink example (flink_example.py)
 
-# Hadoop dependencies (mrjob for MapReduce jobs)
-mrjob==0.7.4
-
-# General utilities
-numpy==1.24.3
-pandas==2.0.3
-
-# Data pipeline dependencies
-requests==2.31.0
-tqdm==4.66.1
+# Note: For the simplified in-degree distribution computation,
+# no external packages are needed. The scripts/indegree/indegree_distribution.py
+# uses only Python standard library (collections, sys).
