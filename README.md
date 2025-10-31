@@ -21,6 +21,25 @@ Access web interfaces:
 - **Spark**: http://localhost:8080 (Master) & http://localhost:8081 (Worker)  
 - **Flink**: http://localhost:8082 (Dashboard)
 
+## 📊 **Featured Project: In-Degree Distribution Analysis**
+
+Compare Hadoop MapReduce vs Spark for graph analytics on real-world datasets:
+
+```bash
+# Run analysis on 420K edge dataset (5-10 minutes)
+make indegree-analysis-small
+```
+
+**Includes:**
+- ✅ Two-stage MapReduce implementation
+- ✅ Spark RDD-based implementation
+- ✅ Performance comparison and metrics
+- ✅ Power-law distribution visualization
+- ✅ Comprehensive analysis report
+
+📖 **Quick Start**: [INDEGREE_QUICKSTART.md](INDEGREE_QUICKSTART.md)  
+📚 **Full Guide**: [IN_DEGREE_ANALYSIS_GUIDE.md](IN_DEGREE_ANALYSIS_GUIDE.md)
+
 ## 📚 **Learning Outcomes**
 
 ### 1. **Distributed Computing Mastery**
