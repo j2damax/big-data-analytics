@@ -112,3 +112,30 @@ data-status: ## Check status of datasets in HDFS
 data-clean: ## Remove downloaded and processed datasets
 	rm -rf data/raw/* data/processed/*
 	@echo "Local datasets cleaned"
+
+# In-degree distribution analysis targets
+indegree-test: ## Test in-degree implementations locally
+	cd scripts/indegree_analysis && python3 test_local.py
+
+indegree-hadoop: ## Run Hadoop in-degree on email-EuAll (test dataset)
+	docker exec hadoop python3 /scripts/indegree_analysis/hadoop_indegree.py \
+		-r hadoop \
+		--hadoop-streaming-jar /opt/hadoop/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+		/user/root/snap_datasets/email-EuAll/email-EuAll.txt \
+		--output-dir /user/root/output/hadoop_email_indegree
+
+indegree-spark: ## Run Spark in-degree on email-EuAll (test dataset)
+	docker exec spark-master spark-submit \
+		--master local[*] \
+		/scripts/indegree_analysis/spark_indegree.py \
+		/user/root/snap_datasets/email-EuAll/email-EuAll.txt
+
+indegree-experiments: ## Run complete in-degree experiments on all datasets
+	docker exec hadoop python3 /scripts/indegree_analysis/run_experiments.py \
+		--datasets all \
+		--output-dir /scripts/indegree_analysis/results
+
+indegree-visualize: ## Generate visualizations and analysis report
+	cd scripts/indegree_analysis && python3 visualize_results.py \
+		--results results/experiment_results.json \
+		--output-dir plots
