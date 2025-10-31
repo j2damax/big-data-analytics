@@ -211,9 +211,16 @@ class InDegreeExperimentRunner:
                         # Parse "indegree\tcount" format
                         parts = line.split('\t')
                         if len(parts) == 2:
-                            indegree = int(parts[0].strip('"'))
-                            count = int(parts[1])
-                            results[indegree] = count
+                            try:
+                                # Handle quoted keys and strip whitespace consistently
+                                indegree_str = parts[0].strip().strip('"')
+                                count_str = parts[1].strip()
+                                indegree = int(indegree_str)
+                                count = int(count_str)
+                                results[indegree] = count
+                            except (ValueError, IndexError) as e:
+                                # Skip lines that don't parse correctly
+                                print(f"Warning: Could not parse line: {line} - {e}")
         
         return results
     

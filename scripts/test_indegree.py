@@ -54,9 +54,14 @@ def test_mapreduce_local(input_file):
     
     try:
         # Run with mrjob in local mode
+        # Use relative path for portability
+        import os
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        mapreduce_script = os.path.join(script_dir, 'indegree_mapreduce.py')
+        
         cmd = [
             'python3',
-            '/home/runner/work/big-data-analytics/big-data-analytics/scripts/indegree_mapreduce.py',
+            mapreduce_script,
             '-r', 'local',
             input_file
         ]
