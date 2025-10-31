@@ -21,6 +21,23 @@ Access web interfaces:
 - **Spark**: http://localhost:8080 (Master) & http://localhost:8081 (Worker)  
 - **Flink**: http://localhost:8082 (Dashboard)
 
+## 🆕 **New: In-Degree Distribution Analysis**
+
+Compare Hadoop MapReduce vs Apache Spark for graph analytics on large-scale network datasets (116M+ edges):
+
+```bash
+# Quick test
+make indegree-test
+
+# Run experiments on all datasets (1-2 hours)
+make indegree-experiments
+
+# Generate visualizations and analysis
+make indegree-visualize
+```
+
+**Features**: Automated experiments, performance metrics, visualizations, comprehensive analysis. See [INDEGREE_ANALYSIS.md](INDEGREE_ANALYSIS.md) for details.
+
 ## 📚 **Learning Outcomes**
 
 ### 1. **Distributed Computing Mastery**
@@ -74,6 +91,12 @@ big-data-analytics/
 │   ├── spark_example.py    # DataFrames, SQL, and RDDs
 │   ├── kafka_example.py    # Producer/consumer messaging
 │   ├── flink_example.py    # Stream processing and Table API
+│   ├── indegree_analysis/  # 🆕 Graph analytics (Hadoop vs Spark comparison)
+│   │   ├── hadoop_indegree.py    # MapReduce implementation
+│   │   ├── spark_indegree.py     # Spark implementation
+│   │   ├── run_experiments.py    # Automated benchmarking
+│   │   ├── visualize_results.py  # Performance plots
+│   │   └── README.md             # Complete documentation
 │   ├── sample_data.txt     # Test dataset
 │   └── README.md           # Example script documentation
 ├── 🐳 docker-compose.yml   # 6-service orchestration with networking
@@ -165,6 +188,7 @@ make test-all    # Runs all examples in sequence with error handling
 | `make test-kafka` | **Kafka** | Producer/consumer messaging with JSON serialization |
 | `make test-flink` | **Flink** | Stream processing, windowing, and Table API operations |
 | `make test-hadoop` | **Hadoop** | MapReduce job execution with HDFS storage |
+| `make indegree-test` | 🆕 **Graph Analytics** | In-degree distribution: Hadoop vs Spark comparison |
 
 ### **Advanced Usage Patterns**
 
