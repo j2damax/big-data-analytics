@@ -112,3 +112,28 @@ data-status: ## Check status of datasets in HDFS
 data-clean: ## Remove downloaded and processed datasets
 	rm -rf data/raw/* data/processed/*
 	@echo "Local datasets cleaned"
+
+# In-Degree Analysis targets
+indegree-test: ## Test in-degree implementations locally
+	python3 scripts/test_indegree.py
+
+indegree-analysis: ## Run complete in-degree analysis (requires Hadoop and Spark running)
+	docker exec hadoop bash /scripts/run_complete_analysis.sh
+
+indegree-analysis-small: ## Run in-degree analysis on small dataset (email-EuAll)
+	docker exec hadoop bash /scripts/run_complete_analysis.sh email-EuAll
+
+indegree-results: ## View in-degree analysis results
+	@echo "Results location: /tmp/indegree_results/"
+	docker exec hadoop ls -lh /tmp/indegree_results/ || echo "No results found"
+	@echo ""
+	@echo "Plots location: /tmp/indegree_plots/"
+	docker exec hadoop ls -lh /tmp/indegree_plots/ || echo "No plots found"
+
+indegree-report: ## View in-degree analysis report
+	docker exec hadoop cat /tmp/indegree_plots/IN_DEGREE_ANALYSIS_REPORT.md || echo "Report not found. Run 'make indegree-analysis' first."
+
+indegree-download: ## Download in-degree analysis deliverables
+	@echo "Finding latest deliverables ZIP..."
+	@docker exec hadoop sh -c 'ls -t /tmp/indegree_analysis_deliverables_*.zip | head -1' | xargs -I {} docker cp hadoop:{} .
+	@echo "Deliverables downloaded to current directory"

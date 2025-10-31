@@ -15,6 +15,7 @@ mrjob==0.7.4
 # General utilities
 numpy==1.24.3
 pandas==2.0.3
+matplotlib==3.7.2
 
 # Data pipeline dependencies
 requests==2.31.0
