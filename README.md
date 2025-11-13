@@ -1,6 +1,6 @@
 # Big Data Analytics
 
-A comprehensive, production-ready big data analytics environment demonstrating Hadoop, Spark, Kafka, and Flink technologies running in Docker containers. This project provides a complete ecosystem for learning and experimenting with distributed computing, stream processing, and big data analytics.
+A comprehensive, production-ready big data analytics environment demonstrating Hadoop, Spark, Kafka, and Flink technologies running in Docker containers. This project provides a complete ecosystem for learning and experimenting with distributed computing, stream processing, and big data analytics..
 
 ## 🚀 **Quick Start (5 Minutes)**
 
