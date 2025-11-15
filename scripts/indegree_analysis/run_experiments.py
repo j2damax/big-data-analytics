@@ -49,7 +49,7 @@ class ExperimentRunner:
         print(f"Running Hadoop MapReduce on {dataset_name}")
         print(f"{'='*60}")
         
-        output_path = f"{self.output_dir}/hadoop_{dataset_name}_distribution"
+        output_path = f"hdfs://hadoop:9000/user/root/{self.output_dir}/hadoop_{dataset_name}_distribution"
         indegree_path = f"{self.output_dir}/hadoop_{dataset_name}_indegree"
         
         start_time = time.time()
@@ -60,7 +60,7 @@ class ExperimentRunner:
                 'python3',
                 '/scripts/indegree_analysis/hadoop_indegree.py',
                 '-r', 'hadoop',
-                '--hadoop-streaming-jar', '/opt/hadoop/share/hadoop/tools/lib/hadoop-streaming-*.jar',
+                '--hadoop-streaming-jar', '/opt/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.3.6.jar',
                 input_path,
                 '--output-dir', output_path
             ]
@@ -131,7 +131,7 @@ class ExperimentRunner:
         print(f"Running Apache Spark on {dataset_name}")
         print(f"{'='*60}")
         
-        output_path = f"{self.output_dir}/spark_{dataset_name}_distribution"
+        output_path = f"hdfs://hadoop:9000/user/root/{self.output_dir}/spark_{dataset_name}_distribution"
         
         start_time = time.time()
         
@@ -140,6 +140,7 @@ class ExperimentRunner:
             cmd = [
                 'spark-submit',
                 '--master', 'local[*]',
+                '--conf', 'spark.hadoop.fs.defaultFS=hdfs://hadoop:9000',
                 '/scripts/indegree_analysis/spark_indegree.py',
                 input_path,
                 '--output', output_path
@@ -325,19 +326,19 @@ def main():
     all_datasets = [
         {
             'name': 'email-EuAll',
-            'path': '/user/root/snap_datasets/email-EuAll/email-EuAll.txt'
+            'path': 'hdfs://hadoop:9000/user/root/snap_datasets/email-EuAll/email-EuAll.txt'
         },
         {
             'name': 'cit-Patents',
-            'path': '/user/root/snap_datasets/cit-Patents/cit-Patents.txt'
+            'path': 'hdfs://hadoop:9000/user/root/snap_datasets/cit-Patents/cit-Patents.txt'
         },
         {
             'name': 'soc-Pokec',
-            'path': '/user/root/snap_datasets/soc-Pokec/soc-pokec-relationships.txt'
+            'path': 'hdfs://hadoop:9000/user/root/snap_datasets/soc-Pokec/soc-pokec-relationships.txt'
         },
         {
             'name': 'soc-LiveJournal1',
-            'path': '/user/root/snap_datasets/soc-LiveJournal1/soc-LiveJournal1.txt'
+            'path': 'hdfs://hadoop:9000/user/root/snap_datasets/soc-LiveJournal1/soc-LiveJournal1.txt'
         }
     ]
     
