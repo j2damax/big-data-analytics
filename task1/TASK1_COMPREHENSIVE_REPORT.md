@@ -99,7 +99,7 @@ Stage 2: Compute Distribution
 - Uses mrjob for Python-based MapReduce development
 - Hadoop Streaming compatibility for cluster deployment
 - Disk-based processing with HDFS integration
-- Two-step MapReduce for distribution computation
+- Two-stage MapReduce for distribution computation
 
 **Code Structure:**
 ```python
@@ -172,8 +172,8 @@ class SparkInDegree:
 | **Processing Model** | Disk-based batch | In-memory iterative |
 | **Data Flow** | Disk → Map → Disk → Reduce → Disk | Memory → Transform → Memory |
 | **Language** | Python (mrjob) | Python (PySpark) |
-| **API Complexity** | Moderate | Lower (functional) |
-| **Lines of Code** | ~113 | ~236 |
+| **API Complexity** | Moderate | Lower (more intuitive functional API) |
+| **Lines of Code** | ~113 | ~236 (includes more features and statistics) |
 | **Fault Tolerance** | Through HDFS replication | Through RDD lineage |
 
 ### 1.2 Experimental Setup
@@ -890,9 +890,10 @@ def steps(self):
 **Optimization 2: Output Compression**
 
 ```bash
-# Configuration for compressed output
--D mapreduce.output.fileoutputformat.compress=true
--D mapreduce.output.fileoutputformat.compress.codec=org.apache.hadoop.io.compress.SnappyCodec
+# Configuration for compressed output (pass as Hadoop configuration properties)
+# These are passed to the hadoop command or mrjob configuration
+--jobconf mapreduce.output.fileoutputformat.compress=true
+--jobconf mapreduce.output.fileoutputformat.compress.codec=org.apache.hadoop.io.compress.SnappyCodec
 ```
 
 - **Expected Impact:** 20-30% faster I/O
@@ -903,7 +904,7 @@ def steps(self):
 
 ```bash
 # Increase parallelism for reduce phase
--D mapreduce.job.reduces=8
+--jobconf mapreduce.job.reduces=8
 ```
 
 - **Expected Impact:** Better parallelism on multi-core systems
@@ -1024,18 +1025,21 @@ Shows: Improved execution time with caching and Kryo serialization
 
 **Visualization of Performance Patterns:**
 
-```
-Performance vs Dataset Size (Conceptual)
+*Conceptual Diagram: Performance vs Dataset Size*
 
-Time │
-     │    ___________  Hadoop (linear scaling, higher constant)
-     │   /
-     │  /   _________  Spark (linear scaling, lower constant)
-     │ /   /
-     │/   /
-     └────────────────► Dataset Size
+```text
+Time (seconds)
+     ^
+     |    _____________  Hadoop (linear scaling, higher constant)
+     |   /
+     |  /   ___________  Spark (linear scaling, lower constant)
+     | /   /
+     |/   /
+     +---------------------> Dataset Size (edges)
 
-The gap between lines represents Spark's advantage from in-memory processing.
+Note: The gap between lines represents Spark's advantage 
+from in-memory processing. Both scale linearly, but with 
+different constant factors due to I/O overhead differences.
 ```
 
 #### 3.1.2 Root Cause Analysis
