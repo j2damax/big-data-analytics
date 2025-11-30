@@ -7,15 +7,15 @@ pyspark==3.5.0
 kafka-python==2.0.2
 
 # Flink dependencies
-apache-flink==1.18.0
+# apache-flink==1.18.0  # Disabled - use Flink in Docker container instead
 
 # Hadoop dependencies (mrjob for MapReduce jobs)
 mrjob==0.7.4
 
 # General utilities
-numpy==1.24.3
-pandas==2.0.3
-matplotlib==3.7.2
+numpy>=1.26.0
+pandas>=2.1.0
+matplotlib>=3.8.0
 
 # Data pipeline dependencies
 requests==2.31.0

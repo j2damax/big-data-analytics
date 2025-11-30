@@ -218,4 +218,6 @@ Thumbs.db
 # Data pipeline - downloaded and processed datasets
 data/raw/
 data/processed/
+task1/data/raw/
+task1/data/processed/
 data_pipeline.log

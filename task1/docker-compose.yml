@@ -1,0 +1,79 @@
+services:
+  # Hadoop
+  hadoop:
+    build:
+      context: ./hadoop
+      dockerfile: Dockerfile
+    hostname: hadoop
+    container_name: hadoop
+    environment:
+      - JAVA_HOME=/usr/local/openjdk-8
+      - HDFS_NAMENODE_USER=root
+      - HDFS_DATANODE_USER=root
+      - HDFS_SECONDARYNAMENODE_USER=root
+      - YARN_RESOURCEMANAGER_USER=root
+      - YARN_NODEMANAGER_USER=root
+    ports:
+      - "9870:9870"  # NameNode Web UI
+      - "8088:8088"  # ResourceManager Web UI
+      - "8042:8042"  # NodeManager Web UI
+      - "9000:9000"  # HDFS
+      - "8020:8020"  # HDFS IPC
+    volumes:
+      - ./scripts:/scripts
+      - ./data:/data
+#      - hadoop-data:/opt/hadoop/data
+    networks:
+      - bigdata-network
+    command: bash -c "export JAVA_HOME=/opt/java/openjdk && service ssh start && hdfs namenode -format -force && start-dfs.sh && start-yarn.sh && tail -f /dev/null"
+
+  # Spark Master
+  spark-master:
+    build:
+      context: ./spark
+      dockerfile: Dockerfile
+    hostname: spark-master
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master
+    ports:
+      - "8080:8080"  # Spark Master Web UI
+      - "7077:7077"  # Spark Master port
+      - "4040:4040"  # Spark Application UI
+    volumes:
+      - ./scripts:/scripts
+      - ./data:/data
+    networks:
+      - bigdata-network
+    command: bash -c "/opt/spark/sbin/start-master.sh && tail -f /dev/null"
+
+  # Spark Worker
+  spark-worker:
+    build:
+      context: ./spark
+      dockerfile: Dockerfile
+    hostname: spark-worker
+    container_name: spark-worker
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+      - SPARK_WORKER_CORES=1
+    ports:
+      - "8081:8081"  # Spark Worker Web UI
+    volumes:
+      - ./scripts:/scripts
+      - ./data:/data
+    networks:
+      - bigdata-network
+    command: bash -c "/opt/spark/sbin/start-worker.sh spark://spark-master:7077 && tail -f /dev/null"
+networks:
+  bigdata-network:
+    driver: bridge
+
+volumes:
+  hadoop-data:
+  hadoop-datanode-data:
