@@ -1,6 +1,6 @@
 # In-Degree Distribution Analysis Report
 
-**Generated:** 2025-11-30T03:18:35.737787
+**Generated:** 2025-11-30T15:35:13.945255
 
 ## Experiment Results
 
@@ -8,12 +8,32 @@
 
 | Dataset | Hadoop MapReduce | Apache Spark | Speedup |
 |---------|------------------|--------------|----------|
-| cit-Patents | Failed | Failed | N/A |
-| email-EuAll | Failed | Failed | N/A |
-| soc-LiveJournal1 | Failed | Failed | N/A |
-| soc-Pokec | Failed | Failed | N/A |
+| cit-Patents | 71.68s | 23.02s | 3.11x |
+| email-EuAll | 33.63s | 5.30s | 6.34x |
+| soc-LiveJournal1 | 146.54s | 34.46s | 4.25x |
+| soc-Pokec | 81.99s | 21.09s | 3.89x |
 
 ### Statistics
+
+**email-EuAll** (Spark):
+- Total nodes with in-degree > 0: 74660
+- Maximum in-degree: 7631
+- Average in-degree: 5.63
+
+**cit-Patents** (Spark):
+- Total nodes with in-degree > 0: 3258983
+- Maximum in-degree: 779
+- Average in-degree: 5.07
+
+**soc-Pokec** (Spark):
+- Total nodes with in-degree > 0: 1519452
+- Maximum in-degree: 13733
+- Average in-degree: 20.15
+
+**soc-LiveJournal1** (Spark):
+- Total nodes with in-degree > 0: 4489240
+- Maximum in-degree: 13906
+- Average in-degree: 15.37
 
 ## Analysis
 

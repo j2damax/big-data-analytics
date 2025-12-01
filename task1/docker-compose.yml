@@ -22,7 +22,6 @@ services:
     volumes:
       - ./scripts:/scripts
       - ./data:/data
-#      - hadoop-data:/opt/hadoop/data
     networks:
       - bigdata-network
     command: bash -c "export JAVA_HOME=/opt/java/openjdk && service ssh start && hdfs namenode -format -force && start-dfs.sh && start-yarn.sh && tail -f /dev/null"
@@ -73,7 +72,3 @@ services:
 networks:
   bigdata-network:
     driver: bridge
-
-volumes:
-  hadoop-data:
-  hadoop-datanode-data:
