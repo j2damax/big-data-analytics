@@ -8,29 +8,34 @@
 
 1. [Introduction](#1-introduction)
 2. [Objectives](#2-objectives)
-3. [Part 1: Setup and Environment Configuration](#3-part-1-setup-and-environment-configuration)
-   - 3.1 [System Architecture Overview](#31-system-architecture-overview)
-   - 3.2 [Apache Kafka Installation and Configuration](#32-apache-kafka-installation-and-configuration)
-   - 3.3 [Kafka Topics Design](#33-kafka-topics-design)
-   - 3.4 [Supporting Services Configuration](#34-supporting-services-configuration)
-   - 3.5 [Environment Verification](#35-environment-verification)
-4. [Part 2: Data Source and Preprocessing](#4-part-2-data-source-and-preprocessing)
-   - 4.1 [Dataset Selection and Description](#41-dataset-selection-and-description)
-   - 4.2 [Data Exploration and Preparation](#42-data-exploration-and-preparation)
-   - 4.3 [Data Format Conversion](#43-data-format-conversion)
-   - 4.4 [Real-Time Streaming Simulation](#44-real-time-streaming-simulation)
-5. [Part 3: Streaming Data Processing and Analysis](#5-part-3-streaming-data-processing-and-analysis)
-   - 5.1 [Kafka Producer Implementation](#51-kafka-producer-implementation)
-   - 5.2 [Stream Processing with Quix Streams](#52-stream-processing-with-quix-streams)
-   - 5.3 [Metric Computation Methodology](#53-metric-computation-methodology)
-   - 5.4 [Data Persistence with QuestDB](#54-data-persistence-with-questdb)
-6. [Part 4: Visualization and Reporting](#6-part-4-visualization-and-reporting)
-   - 6.1 [Grafana Dashboard Setup](#61-grafana-dashboard-setup)
-   - 6.2 [Dashboard Panels and Visualizations](#62-dashboard-panels-and-visualizations)
-   - 6.3 [Results and Observations](#63-results-and-observations)
-7. [Conclusion](#7-conclusion)
-8. [References](#8-references)
-9. [Appendix](#9-appendix)
+3. [Apache Kafka: Key Concepts and Components](#3-apache-kafka-key-concepts-and-components)
+   - 3.1 [What is Apache Kafka?](#31-what-is-apache-kafka)
+   - 3.2 [Core Kafka Components](#32-core-kafka-components)
+   - 3.3 [Kafka Architecture Concepts](#33-kafka-architecture-concepts)
+   - 3.4 [How Kafka Concepts Are Applied in This Solution](#34-how-kafka-concepts-are-applied-in-this-solution)
+4. [Part 1: Setup and Environment Configuration](#4-part-1-setup-and-environment-configuration)
+   - 4.1 [System Architecture Overview](#41-system-architecture-overview)
+   - 4.2 [Apache Kafka Installation and Configuration](#42-apache-kafka-installation-and-configuration)
+   - 4.3 [Kafka Topics Design](#43-kafka-topics-design)
+   - 4.4 [Supporting Services Configuration](#44-supporting-services-configuration)
+   - 4.5 [Environment Verification](#45-environment-verification)
+5. [Part 2: Data Source and Preprocessing](#5-part-2-data-source-and-preprocessing)
+   - 5.1 [Dataset Selection and Description](#51-dataset-selection-and-description)
+   - 5.2 [Data Exploration and Preparation](#52-data-exploration-and-preparation)
+   - 5.3 [Data Format Conversion](#53-data-format-conversion)
+   - 5.4 [Real-Time Streaming Simulation](#54-real-time-streaming-simulation)
+6. [Part 3: Streaming Data Processing and Analysis](#6-part-3-streaming-data-processing-and-analysis)
+   - 6.1 [Kafka Producer Implementation](#61-kafka-producer-implementation)
+   - 6.2 [Stream Processing with Quix Streams](#62-stream-processing-with-quix-streams)
+   - 6.3 [Metric Computation Methodology](#63-metric-computation-methodology)
+   - 6.4 [Data Persistence with QuestDB](#64-data-persistence-with-questdb)
+7. [Part 4: Visualization and Reporting](#7-part-4-visualization-and-reporting)
+   - 7.1 [Grafana Dashboard Setup](#71-grafana-dashboard-setup)
+   - 7.2 [Dashboard Panels and Visualizations](#72-dashboard-panels-and-visualizations)
+   - 7.3 [Results and Observations](#73-results-and-observations)
+8. [Conclusion](#8-conclusion)
+9. [References](#9-references)
+10. [Appendix](#10-appendix)
 
 ---
 
@@ -54,9 +59,357 @@ The main objectives of this project are:
 
 ---
 
-## 3. Part 1: Setup and Environment Configuration
+## 3. Apache Kafka: Key Concepts and Components
 
-### 3.1 System Architecture Overview
+This section provides an overview of Apache Kafka's fundamental concepts and explains how each component is utilized in our IoT sensor data analytics solution.
+
+### 3.1 What is Apache Kafka?
+
+**Apache Kafka** is an open-source distributed event streaming platform designed for high-throughput, fault-tolerant, and scalable real-time data processing. Originally developed by LinkedIn and later donated to the Apache Software Foundation, Kafka has become the industry standard for building real-time data pipelines and streaming applications.
+
+**Key Characteristics:**
+
+| Characteristic | Description |
+|----------------|-------------|
+| **Distributed** | Runs as a cluster across multiple servers for scalability and fault tolerance |
+| **Persistent** | Messages are stored on disk and replicated for durability |
+| **High Throughput** | Capable of handling millions of messages per second |
+| **Low Latency** | Sub-millisecond message delivery for real-time applications |
+| **Scalable** | Horizontal scaling by adding more brokers and partitions |
+
+**How We Use It:** In our solution, Kafka serves as the central nervous system for traffic data streaming, enabling real-time ingestion of sensor readings and distributing them to multiple consumers for processing.
+
+### 3.2 Core Kafka Components
+
+#### 3.2.1 Broker
+
+A **Kafka Broker** is a server that stores data and serves client requests. Multiple brokers form a Kafka cluster.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Kafka Cluster                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐      │
+│  │  Broker 1   │  │  Broker 2   │  │  Broker 3   │      │
+│  │  (Leader)   │  │ (Follower)  │  │ (Follower)  │      │
+│  └─────────────┘  └─────────────┘  └─────────────┘      │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Our Implementation:** We deploy a single Kafka broker in Docker for development purposes:
+```yaml
+kafka-broker:
+  image: apache/kafka:latest
+  container_name: kafka-broker
+  ports:
+    - "9092:9092"
+```
+
+#### 3.2.2 Topic
+
+A **Topic** is a category or feed name to which messages are published. Topics are partitioned and replicated across brokers.
+
+**Topic Characteristics:**
+- Acts as a logical channel for messages
+- Can have multiple partitions for parallelism
+- Messages are immutable once written
+- Supports configurable retention policies
+
+**Our Implementation:** We created multiple topics for different data flows:
+
+| Topic Name | Purpose | Data Flow |
+|------------|---------|-----------|
+| `traffic_raw` | Raw sensor readings | Producer → Consumer |
+| `hourly_average` | Aggregated hourly metrics | Consumer → Hourly Total Consumer |
+| `traffic_metrics` | General computed metrics | Consumer → Storage |
+| `metric_availability` | Sensor health data | Consumer → Storage |
+
+#### 3.2.3 Partition
+
+A **Partition** is a subset of a topic that allows for parallel processing. Each partition is an ordered, immutable sequence of messages.
+
+```
+Topic: traffic_raw
+┌─────────────────────────────────────────────────────────┐
+│  Partition 0: [msg0] [msg1] [msg2] [msg3] → offset      │
+│  Partition 1: [msg0] [msg1] [msg2] → offset             │
+│  Partition 2: [msg0] [msg1] [msg2] [msg3] [msg4] →      │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Key Features:**
+- Messages within a partition are strictly ordered
+- Different partitions can be processed in parallel
+- Partition assignment is based on message key (or round-robin if no key)
+
+**Our Implementation:** We configure 3 partitions for the `traffic_raw` topic:
+```yaml
+KAFKA_NUM_PARTITIONS: 3
+```
+
+Messages are partitioned by `atd_device_id` (sensor ID), ensuring all readings from the same sensor go to the same partition, maintaining order per device.
+
+#### 3.2.4 Producer
+
+A **Producer** is a client application that publishes messages to Kafka topics. Producers can choose which partition to send messages to.
+
+**Producer Responsibilities:**
+- Serialize message data
+- Determine target partition
+- Handle delivery acknowledgments
+- Implement retry logic for failures
+
+**Our Implementation:** The `sensor-data-producer.py` script publishes traffic sensor readings:
+
+```python
+self.producer = KafkaProducer(
+    bootstrap_servers=[self.bootstrap_servers],
+    value_serializer=lambda x: json.dumps(x).encode('utf-8'),
+    key_serializer=lambda x: x.encode('utf-8') if x else None,
+    acks='all',           # Wait for all replicas to acknowledge
+    retries=3,            # Retry failed sends
+    batch_size=16384,     # Batch size in bytes
+    linger_ms=10          # Wait time before sending batch
+)
+```
+
+#### 3.2.5 Consumer
+
+A **Consumer** is a client application that reads messages from Kafka topics. Consumers can be organized into consumer groups for parallel processing.
+
+**Consumer Responsibilities:**
+- Subscribe to one or more topics
+- Poll for new messages
+- Process messages
+- Commit offsets to track progress
+
+**Our Implementation:** We have two consumer applications:
+
+1. **sensor-data-consumer.py** - Processes raw traffic data:
+```python
+app = Application(
+    broker_address=KAFKA_BROKER,
+    auto_offset_reset="earliest",
+    consumer_group="traffic-metrics-consumer"
+)
+```
+
+2. **hourly-total-consumer.py** - Aggregates hourly totals:
+```python
+app = Application(
+    broker_address=KAFKA_BROKER,
+    consumer_group="hourly-total-consumer",
+    auto_offset_reset="earliest"
+)
+```
+
+#### 3.2.6 Consumer Group
+
+A **Consumer Group** is a set of consumers that work together to consume messages from a topic. Each partition is assigned to exactly one consumer in the group.
+
+```
+Consumer Group: traffic-metrics-consumer
+┌─────────────────────────────────────────────────────────┐
+│  Topic: traffic_raw                                      │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐            │
+│  │Partition 0│  │Partition 1│  │Partition 2│            │
+│  └─────┬─────┘  └─────┬─────┘  └─────┬─────┘            │
+│        │              │              │                   │
+│        ▼              ▼              ▼                   │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐            │
+│  │Consumer 1 │  │Consumer 2 │  │Consumer 3 │            │
+│  └───────────┘  └───────────┘  └───────────┘            │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Benefits:**
+- Enables horizontal scaling of consumers
+- Provides fault tolerance (rebalancing on consumer failure)
+- Ensures each message is processed once per group
+
+**Our Implementation:** Each consumer application uses a unique consumer group:
+- `traffic-metrics-consumer` for the main sensor data consumer
+- `hourly-total-consumer` for the daily peak aggregator
+
+### 3.3 Kafka Architecture Concepts
+
+#### 3.3.1 Offset
+
+An **Offset** is a unique identifier for each message within a partition. It represents the position of a message in the partition log.
+
+```
+Partition 0:
+┌────┬────┬────┬────┬────┬────┬────┐
+│ 0  │ 1  │ 2  │ 3  │ 4  │ 5  │ 6  │  ← Offsets
+└────┴────┴────┴────┴────┴────┴────┘
+                    ↑
+              Current Offset (Consumer position)
+```
+
+**Offset Management:**
+- **Earliest**: Start from the beginning of the partition
+- **Latest**: Start from the newest messages only
+- **Committed Offset**: Last successfully processed position
+
+**Our Implementation:** Consumers use `auto_offset_reset="earliest"` to process all historical data when starting:
+```python
+app = Application(
+    broker_address=KAFKA_BROKER,
+    auto_offset_reset="earliest"
+)
+```
+
+#### 3.3.2 Message Key
+
+A **Message Key** is an optional identifier attached to each message. Keys determine partition assignment and enable message ordering guarantees.
+
+**Key Uses:**
+- Consistent partition routing (same key → same partition)
+- Message ordering per key
+- Log compaction (keeping only latest value per key)
+
+**Our Implementation:** We use `atd_device_id` as the message key:
+```python
+key = record.get('atd_device_id', str(record_index))
+future = self.producer.send(self.topic, key=key, value=record)
+```
+
+This ensures all readings from sensor "7038" always go to the same partition, maintaining chronological order per sensor.
+
+#### 3.3.3 Message Value (Payload)
+
+The **Message Value** is the actual data content of the message. Kafka treats it as a byte array, leaving serialization to the application.
+
+**Our Implementation:** We serialize traffic sensor data as JSON:
+```python
+value_serializer=lambda x: json.dumps(x).encode('utf-8')
+```
+
+**Sample Message Value:**
+```json
+{
+  "record_id": "5e7c8b1f9ea3ddd27f0637d430adf042",
+  "atd_device_id": "7038",
+  "read_date": "2023-05-20T22:00:00.000",
+  "intersection_name": "ANDERSON LN / SHOAL CREEK BLVD",
+  "direction": "SOUTHBOUND",
+  "movement": "LEFT TURN",
+  "heavy_vehicle": false,
+  "volume": "10",
+  "speed_average": "9.3",
+  "speed_stddev": "1.337",
+  "seconds_in_zone_average": "33.05",
+  "seconds_in_zone_stddev": "27.248",
+  "month": "5",
+  "day": "20",
+  "year": "2023",
+  "hour": "22",
+  "minute": "0",
+  "day_of_week": "6",
+  "bin_duration": "900"
+}
+```
+
+#### 3.3.4 Replication
+
+**Replication** is Kafka's mechanism for fault tolerance. Each partition can be replicated across multiple brokers.
+
+**Replication Concepts:**
+- **Replication Factor**: Number of copies of each partition
+- **Leader**: The broker that handles all reads/writes for a partition
+- **Follower**: Brokers that replicate the leader's data
+- **ISR (In-Sync Replicas)**: Followers that are caught up with the leader
+
+**Our Implementation:** For single-node development, replication factor is set to 1:
+```yaml
+KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+```
+
+*Note: Production deployments should use replication factor ≥ 3 for fault tolerance.*
+
+#### 3.3.5 KRaft Mode (Kafka Raft)
+
+**KRaft** is Kafka's newer consensus protocol that eliminates the dependency on ZooKeeper for metadata management.
+
+**Benefits of KRaft:**
+- Simplified architecture (no separate ZooKeeper cluster)
+- Improved scalability
+- Faster controller failover
+- Easier deployment and operations
+
+**Our Implementation:** We use KRaft mode with combined broker and controller:
+```yaml
+KAFKA_PROCESS_ROLES: broker,controller
+KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-broker:9093
+```
+
+### 3.4 How Kafka Concepts Are Applied in This Solution
+
+The following diagram illustrates how all Kafka concepts work together in our traffic analytics pipeline:
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    Kafka Data Flow in Our Solution                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────────────┐                                                     │
+│  │   Traffic Dataset   │                                                     │
+│  │   (100,000 records) │                                                     │
+│  └──────────┬──────────┘                                                     │
+│             │                                                                │
+│             ▼                                                                │
+│  ┌─────────────────────┐     ┌────────────────────────────────────────┐     │
+│  │      PRODUCER       │     │           KAFKA BROKER (KRaft)         │     │
+│  │ sensor-data-producer│────▶│                                        │     │
+│  │                     │     │  Topic: traffic_raw                    │     │
+│  │ Key: atd_device_id  │     │  ┌──────┐ ┌──────┐ ┌──────┐           │     │
+│  │ Value: JSON payload │     │  │Part 0│ │Part 1│ │Part 2│           │     │
+│  │ Serializer: JSON    │     │  └──────┘ └──────┘ └──────┘           │     │
+│  └─────────────────────┘     │                                        │     │
+│                              │  Topic: hourly_average                 │     │
+│                              │  ┌──────────────────────┐              │     │
+│                              │  │     Partition 0      │              │     │
+│                              │  └──────────────────────┘              │     │
+│                              └────────────────────────────────────────┘     │
+│                                          │                                   │
+│                    ┌─────────────────────┼─────────────────────┐            │
+│                    │                     │                     │            │
+│                    ▼                     ▼                     ▼            │
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐  │
+│  │     CONSUMER 1      │  │     CONSUMER 2      │  │     CONSUMER 3      │  │
+│  │ sensor-data-consumer│  │ hourly-total-consumer│  │   (Future scaling) │  │
+│  │                     │  │                     │  │                     │  │
+│  │ Group: traffic-     │  │ Group: hourly-      │  │                     │  │
+│  │        metrics-     │  │        total-       │  │                     │  │
+│  │        consumer     │  │        consumer     │  │                     │  │
+│  │                     │  │                     │  │                     │  │
+│  │ Reads: traffic_raw  │  │ Reads: hourly_avg   │  │                     │  │
+│  │ Writes: hourly_avg  │  │ Writes: QuestDB     │  │                     │  │
+│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘  │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Summary of Kafka Concepts in Action:**
+
+| Concept | Our Implementation | Purpose |
+|---------|-------------------|---------|
+| **Broker** | Single Docker container on port 9092 | Central message storage and routing |
+| **Topic** | `traffic_raw`, `hourly_average`, etc. | Logical separation of data streams |
+| **Partition** | 3 partitions for `traffic_raw` | Enable parallel processing |
+| **Producer** | `sensor-data-producer.py` | Publish sensor readings to Kafka |
+| **Consumer** | `sensor-data-consumer.py`, `hourly-total-consumer.py` | Process and aggregate data |
+| **Consumer Group** | `traffic-metrics-consumer`, `hourly-total-consumer` | Coordinate consumer instances |
+| **Message Key** | `atd_device_id` (sensor ID) | Ensure per-device ordering |
+| **Message Value** | JSON-encoded sensor data | Actual traffic measurements |
+| **Offset** | Auto-managed by Quix Streams | Track processing progress |
+| **KRaft Mode** | Combined broker/controller | Simplified deployment |
+
+---
+
+## 4. Part 1: Setup and Environment Configuration
+
+### 4.1 System Architecture Overview
 
 The solution implements a microservices-based architecture using Docker containers for easy deployment and scalability. The following diagram illustrates the high-level system architecture:
 
@@ -96,7 +449,7 @@ The solution implements a microservices-based architecture using Docker containe
 - **QuestDB**: High-performance time-series database for metric persistence
 - **Grafana**: Visualization platform for real-time dashboards
 
-### 3.2 Apache Kafka Installation and Configuration
+### 4.2 Apache Kafka Installation and Configuration
 
 The solution uses Apache Kafka in KRaft mode (Kafka Raft), which eliminates the need for ZooKeeper. This is configured using the official Apache Kafka Docker image.
 
@@ -132,7 +485,7 @@ kafka-broker:
 | `KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR` | 1 | Replication factor (single node setup) |
 | `KAFKA_CONTROLLER_QUORUM_VOTERS` | 1@kafka-broker:9093 | Controller quorum configuration |
 
-### 3.3 Kafka Topics Design
+### 4.3 Kafka Topics Design
 
 The solution uses multiple Kafka topics to separate raw data from processed metrics:
 
@@ -159,9 +512,9 @@ echo "-- Listing Topics --"
 /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server localhost:9092
 ```
 
-### 3.4 Supporting Services Configuration
+### 4.4 Supporting Services Configuration
 
-#### 3.4.1 Redpanda Console (Kafka Web UI)
+#### 4.4.1 Redpanda Console (Kafka Web UI)
 
 ```yaml
 redpanda-console:
@@ -177,7 +530,7 @@ redpanda-console:
 
 **Access URL:** `http://localhost:8083`
 
-#### 3.4.2 QuestDB Time-Series Database
+#### 4.4.2 QuestDB Time-Series Database
 
 ```yaml
 questdb:
@@ -194,7 +547,7 @@ questdb:
 
 **Access URL:** `http://localhost:9000`
 
-#### 3.4.3 Grafana Dashboard
+#### 4.4.3 Grafana Dashboard
 
 ```yaml
 grafana:
@@ -213,7 +566,7 @@ grafana:
 **Access URL:** `http://localhost:3000`  
 **Credentials:** admin / admin
 
-### 3.5 Environment Verification
+### 4.5 Environment Verification
 
 #### Starting the Environment
 
@@ -261,9 +614,9 @@ Access the Redpanda Console at `http://localhost:8083` to verify message flow:
 
 ---
 
-## 4. Part 2: Data Source and Preprocessing
+## 5. Part 2: Data Source and Preprocessing
 
-### 4.1 Dataset Selection and Description
+### 5.1 Dataset Selection and Description
 
 **Dataset:** Traffic count data from GRIDSMART optical traffic detectors deployed by the City of Austin (2025)
 
@@ -290,7 +643,7 @@ Access the Redpanda Console at `http://localhost:8083` to verify message flow:
 | `volume` | Integer | Vehicle count for the time period |
 | `movement` | String | Type of movement (thru, left, right) |
 
-### 4.2 Data Exploration and Preparation
+### 5.2 Data Exploration and Preparation
 
 The dataset is downloaded using the Socrata Open Data API (SODA). The download script retrieves up to 100,000 records for analysis:
 
@@ -335,7 +688,7 @@ print(f"Dataset written to data/traffic.jsonl with {len(results)} records")
 }
 ```
 
-### 4.3 Data Format Conversion
+### 5.3 Data Format Conversion
 
 The data is converted to JSONL (JSON Lines) format, which is ideal for streaming applications:
 
@@ -353,7 +706,7 @@ with open('data/traffic.jsonl', 'w') as f:
         f.write(json.dumps(record) + '\n')
 ```
 
-### 4.4 Real-Time Streaming Simulation
+### 5.4 Real-Time Streaming Simulation
 
 Since the dataset is historical, the producer simulates real-time streaming by:
 1. Reading records sequentially from the JSONL file
@@ -364,9 +717,9 @@ This approach allows testing the streaming pipeline with realistic data patterns
 
 ---
 
-## 5. Part 3: Streaming Data Processing and Analysis
+## 6. Part 3: Streaming Data Processing and Analysis
 
-### 5.1 Kafka Producer Implementation
+### 6.1 Kafka Producer Implementation
 
 The producer is implemented as a Python application using the `kafka-python` library. It reads traffic data from the JSONL file and publishes to the `traffic_raw` topic.
 
@@ -417,7 +770,7 @@ def _send_record(self, record, record_index):
 > - Sample records being sent
 > - Record count and details (time, device ID, intersection, direction, volume)
 
-### 5.2 Stream Processing with Quix Streams
+### 6.2 Stream Processing with Quix Streams
 
 The solution uses **Quix Streams** for real-time stream processing. Quix Streams is a Python stream processing library that provides:
 
@@ -446,11 +799,11 @@ sdf = app.dataframe(input_topic)
 sdf.apply(process_with_state, stateful=True)
 ```
 
-### 5.3 Metric Computation Methodology
+### 6.3 Metric Computation Methodology
 
 The solution computes three key metrics as specified in the requirements:
 
-#### 5.3.1 Hourly Average Vehicle Count per Sensor
+#### 6.3.1 Hourly Average Vehicle Count per Sensor
 
 **Computation Method:**
 1. Group records by `device_id` and `hour`
@@ -478,7 +831,7 @@ metric = {
 }
 ```
 
-#### 5.3.2 Daily Peak Traffic Volume
+#### 6.3.2 Daily Peak Traffic Volume
 
 **Computation Method:**
 1. The `hourly-total-consumer` subscribes to the `hourly_average` topic
@@ -506,7 +859,7 @@ CREATE TABLE daily_max_hourly_volume (
 ) timestamp(ts) PARTITION BY DAY;
 ```
 
-#### 5.3.3 Daily Sensor Availability Percentage
+#### 6.3.3 Daily Sensor Availability Percentage
 
 **Computation Method:**
 1. Track data points received per sensor per day
@@ -526,7 +879,7 @@ expected_points = 288.0
 availability = min(100, (daily_data["data_points"] / expected_points) * 100)
 ```
 
-### 5.4 Data Persistence with QuestDB
+### 6.4 Data Persistence with QuestDB
 
 **QuestDB Tables Created:**
 
@@ -583,9 +936,9 @@ CREATE TABLE daily_max_hourly_volume (
 
 ---
 
-## 6. Part 4: Visualization and Reporting
+## 7. Part 4: Visualization and Reporting
 
-### 6.1 Grafana Dashboard Setup
+### 7.1 Grafana Dashboard Setup
 
 The Grafana dashboard is automatically provisioned using configuration files mounted into the container.
 
@@ -623,11 +976,11 @@ providers:
       path: /var/lib/grafana/dashboards
 ```
 
-### 6.2 Dashboard Panels and Visualizations
+### 7.2 Dashboard Panels and Visualizations
 
 The dashboard "Sensor Data Metrics" includes three main panels:
 
-#### 6.2.1 Sensor Availability (Gauge Panel)
+#### 7.2.1 Sensor Availability (Gauge Panel)
 
 **Type:** Gauge with color thresholds  
 **Purpose:** Display real-time sensor availability percentage
@@ -653,7 +1006,7 @@ LIMIT 100
 > - Color-coded availability percentages
 > - Device IDs displayed
 
-#### 6.2.2 Daily Peak Traffic Volume (Bar Chart)
+#### 7.2.2 Daily Peak Traffic Volume (Bar Chart)
 
 **Type:** Bar chart  
 **Purpose:** Display peak hourly traffic volume for each day
@@ -671,7 +1024,7 @@ FROM "daily_max_hourly_volume"
 > - Peak volumes on Y-axis
 > - Legend showing metric name
 
-#### 6.2.3 Hourly Average Vehicle Count per Sensor (Time Series)
+#### 7.2.3 Hourly Average Vehicle Count per Sensor (Time Series)
 
 **Type:** Time series line chart  
 **Purpose:** Display running hourly averages for all sensors over time
@@ -691,9 +1044,9 @@ LATEST ON timestamp PARTITION BY device_id, hour
 > - Vehicle count averages on Y-axis
 > - Legend showing device IDs
 
-### 6.3 Results and Observations
+### 7.3 Results and Observations
 
-#### 6.3.1 Complete Dashboard View
+#### 7.3.1 Complete Dashboard View
 
 > **[PLACEHOLDER: Full Screenshot of Grafana Dashboard]**
 >
@@ -703,7 +1056,7 @@ LATEST ON timestamp PARTITION BY device_id, hour
 > - Time range selector
 > - Refresh controls
 
-#### 6.3.2 Traffic Pattern Analysis
+#### 7.3.2 Traffic Pattern Analysis
 
 Based on the processed data, the following observations can be made:
 
@@ -716,7 +1069,7 @@ Based on the processed data, the following observations can be made:
 > - Sensors with highest availability: ________________ *(Expected: >95% for well-maintained sensors)*
 > - Sensors with lowest availability: ________________ *(Note any sensors below 70% that may need maintenance)*
 
-#### 6.3.3 System Performance Observations
+#### 7.3.3 System Performance Observations
 
 > **[PLACEHOLDER: Performance Metrics]**
 >
@@ -728,7 +1081,7 @@ Based on the processed data, the following observations can be made:
 
 ---
 
-## 7. Conclusion
+## 8. Conclusion
 
 This project successfully implemented a complete real-time IoT sensor data analytics pipeline using Apache Kafka. The key achievements include:
 
@@ -779,7 +1132,7 @@ This project successfully implemented a complete real-time IoT sensor data analy
 
 ---
 
-## 8. References
+## 9. References
 
 1. Apache Kafka Documentation - https://kafka.apache.org/documentation/
 2. Quix Streams Documentation - https://quix.io/docs/quix-streams/introduction.html
@@ -790,7 +1143,7 @@ This project successfully implemented a complete real-time IoT sensor data analy
 
 ---
 
-## 9. Appendix
+## 10. Appendix
 
 ### Appendix A: Project File Structure
 
