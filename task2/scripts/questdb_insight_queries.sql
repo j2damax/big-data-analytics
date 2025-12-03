@@ -100,19 +100,27 @@ LIMIT 1;
 -- Query 2c: Calculate daily peak from hourly_average table
 -- Alternative query to compute daily peak from raw hourly data
 -- This sums all sensor volumes per hour, then finds max per day
-SELECT 
-    substring(hour, 1, 10) AS date,
-    max(hourly_total) AS peak_volume,
-    first(hour) AS peak_hour
-FROM (
+WITH hourly_totals AS (
     SELECT 
         hour,
         sum(average_vehicle_count * sample_count) AS hourly_total
     FROM hourly_average
     GROUP BY hour
+),
+daily_max AS (
+    SELECT 
+        substring(hour, 1, 10) AS date,
+        max(hourly_total) AS peak_volume
+    FROM hourly_totals
+    GROUP BY substring(hour, 1, 10)
 )
-GROUP BY substring(hour, 1, 10)
-ORDER BY date;
+SELECT 
+    dm.date,
+    dm.peak_volume,
+    ht.hour AS peak_hour
+FROM daily_max dm
+JOIN hourly_totals ht ON substring(ht.hour, 1, 10) = dm.date AND ht.hourly_total = dm.peak_volume
+ORDER BY dm.date;
 
 -- Query 2d: Get hourly traffic totals across all sensors
 -- Shows the total vehicle count per hour across all sensors
@@ -193,7 +201,9 @@ WHERE device_id = 'SENSOR_ID'
 ORDER BY date;
 
 -- Query 3f: Calculate expected vs actual data points
--- Expected: 288 data points per day (24 hours * 12 readings per hour, i.e., every 5 minutes)
+-- Expected: 288 data points per day (24 hours * 12 readings per hour at 5-minute intervals)
+-- Note: This matches the expected_points value defined in sensor-data-consumer.py
+-- Adjust the expected_points value if your data has a different collection frequency
 SELECT 
     device_id,
     date,
