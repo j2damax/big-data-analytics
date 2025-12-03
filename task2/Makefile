@@ -25,9 +25,6 @@ ps: ## Show status of all containers
 
 clean: ## Stop and remove all containers, volumes, and images
 	docker-compose down -v --rmi all
-
-kafka-prepare:
-	docker exec kafka-broker /scripts/create-topics.sh
 	
 download-dataset:
 	python scripts/download-dataset.py
