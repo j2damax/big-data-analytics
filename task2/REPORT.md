@@ -709,20 +709,22 @@ Based on the processed data, the following observations can be made:
 
 > **[PLACEHOLDER: Analysis Results]**
 >
-> *Fill in after running the application:*
-> - Peak traffic hours observed: ________________
-> - Average daily traffic volume: ________________
-> - Sensors with highest availability: ________________
-> - Sensors with lowest availability: ________________
+> *Instructions: Fill in the following values after running the application locally for at least 30 minutes. Access the Grafana dashboard at http://localhost:3000 and QuestDB console at http://localhost:9000 to collect these metrics.*
+>
+> - Peak traffic hours observed: ________________ *(Expected: typically 7-9 AM and 4-7 PM for urban areas)*
+> - Average daily traffic volume: ________________ *(Expected: varies by intersection, typically 1000-5000 vehicles/day)*
+> - Sensors with highest availability: ________________ *(Expected: >95% for well-maintained sensors)*
+> - Sensors with lowest availability: ________________ *(Note any sensors below 70% that may need maintenance)*
 
 #### 6.3.3 System Performance Observations
 
 > **[PLACEHOLDER: Performance Metrics]**
 >
-> *Fill in after running the application:*
-> - Average message processing latency: ________________
-> - Messages processed per second: ________________
-> - QuestDB query response time: ________________
+> *Instructions: Monitor the Docker container logs and QuestDB query console while the system is running to collect these metrics.*
+>
+> - Average message processing latency: ________________ *(Expected: <100ms for this setup)*
+> - Messages processed per second: ________________ *(Expected: 50-100 msg/sec based on 10ms delay)*
+> - QuestDB query response time: ________________ *(Expected: <50ms for simple queries)*
 
 ---
 
