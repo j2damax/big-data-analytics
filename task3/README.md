@@ -14,18 +14,18 @@ The TukTuk Tournament is an annual adventure competition where teams navigate Sr
 Traditional relational databases struggle with:
 - Recursive pathfinding queries
 - Multi-hop relationship traversals
-- Distance-constrained route optimization
-- Real-time shortest path calculations
+- Distance constrained route optimization
+- Real time shortest path calculations
 
 ### The Solution: Graph Database
 We implemented a **Neo4j** graph model running in **Docker** that:
 1. Models Sri Lankan tourist attractions as **nodes** with point values
 2. Stores road distances as **edge weights** (relationships)
 3. Uses **Cypher queries** for efficient path analysis
-4. Enables constraint-based route optimization
+4. Enables constraint based route optimization
 
-### Mini-Map Demo
-This demo creates a "Mini-Map" of the TukTuk Tournament using **~25 real Sri Lankan tourist attractions** from the southern coast ("Kaliya - Zone 3"), including:
+### Mini Map Demo
+This demo creates a "Mini Map" of the TukTuk Tournament using **~25 real Sri Lankan tourist attractions** from the southern coast ("Kaliya - Zone 3"), including:
 - National Parks (Yala, Kumana, Lunugamvehera)
 - Ancient Temples (Tissamaharama Stupa, Mulgirigala)
 - Beaches and Surf Spots (Hiriketiya, Okanda Beach)
@@ -70,13 +70,12 @@ docker run -d \
 | Node Type | Properties | Description |
 |-----------|------------|-------------|
 | **Location** | name, latitude, longitude, points, zone, challenge | Tourist attractions with gem values |
-| **Team** | name, members, country | Tournament participants |
+
 
 ### Relationships
 | Relationship | Properties | Description |
 |--------------|------------|-------------|
 | **DISTANCE** | km | Connects locations within 50km |
-| **VISITED** | points_earned, visited_date | Links teams to visited locations |
 
 ---
 
@@ -148,13 +147,6 @@ RETURN l.name AS attraction, l.points AS gems
 ORDER BY l.points DESC;
 ```
 
-### View Team's Journey
-```cypher
-MATCH (t:Team)-[v:VISITED]->(l:Location)
-RETURN t.name AS team, 
-       collect(l.name) AS visited_locations,
-       sum(v.points_earned) AS total_gems;
-```
 
 ### Find Optimal Route Within Distance Budget
 ```cypher
