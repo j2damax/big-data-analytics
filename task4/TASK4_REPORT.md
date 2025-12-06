@@ -305,16 +305,18 @@ After setup, the services can be verified:
 We used two social media datasets from the Luminati social media dataset samples:
 
 1. **Twitter Dataset** (`twitter-dataset.csv`)
-   - Contains Twitter/X posts with metadata
+   - Contains approximately 3,100 Twitter/X posts with metadata
    - Fields include: id, user, description, date_posted, hashtags, likes, retweets, etc.
-   - Posts are from various users and topics
+   - Posts are from various users and topics spanning multiple months in 2024
    - Hashtags are stored as JSON arrays
+   - File size: ~1.5 MB
 
 2. **TikTok Dataset** (`tiktok-dataset.csv`)
-   - Contains TikTok video comments
+   - Contains approximately 1,000 TikTok video comments
    - Fields include: url, post_id, date_created, comment_text, num_likes, etc.
-   - Comments from various TikTok videos
+   - Comments from various TikTok videos posted from June to November 2024
    - Hashtags appear in the comment_text field
+   - File size: ~450 KB
 
 #### Data Preprocessing
 
