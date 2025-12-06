@@ -14,8 +14,9 @@ pip install -r requirements.txt
 
 ## Quick Start
 ```bash
-make up
 make prepare
+make up
+make java-build
 make flink-submit-tiktok
 make flink-submit-twitter
 ```

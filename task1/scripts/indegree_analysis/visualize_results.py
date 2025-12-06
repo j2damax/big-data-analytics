@@ -196,6 +196,51 @@ class ResultVisualizer:
         
         print(f"✓ Saved performance comparison: {output_file}")
     
+    def generate_distribution_plots(self):
+        """Generate in-degree distribution plots from results JSON"""
+        experiments = self.results.get('experiments', [])
+        if not experiments:
+            print("Warning: No experiments found in results JSON")
+            return
+        
+        for exp in experiments:
+            if not exp.get('success', False):
+                continue
+            dataset = exp.get('dataset', 'unknown')
+            framework = exp.get('framework', 'unknown')
+            dist_map = exp.get('degree_distribution', {})
+            if not isinstance(dist_map, dict) or not dist_map:
+                # Skip if no distribution embedded in results
+                continue
+            
+            # Convert mapping {degree: count} to sorted list of tuples
+            try:
+                distribution = sorted(
+                    [(int(k), int(v)) for k, v in dist_map.items()],
+                    key=lambda x: x[0]
+                )
+            except Exception:
+                # If keys are not numeric strings, attempt alternative parsing or skip
+                continue
+            
+            # Build safe filenames
+            safe_dataset = dataset.replace('/', '-').replace(' ', '-')
+            safe_framework = framework.replace(' ', '-')
+            base_name = f"{safe_dataset}__{safe_framework}"
+            
+            scatter_path = os.path.join(
+                self.output_dir,
+                f"indegree_scatter__{base_name}.png"
+            )
+            loglog_path = os.path.join(
+                self.output_dir,
+                f"indegree_loglog__{base_name}.png"
+            )
+            
+            title = f"In-Degree Distribution: {dataset} ({framework})"
+            self.plot_distribution(distribution, title, scatter_path)
+            self.plot_loglog_distribution(distribution, title, loglog_path)
+    
     def generate_report(self):
         """Generate comprehensive analysis report"""
         report_file = os.path.join(self.output_dir, 'ANALYSIS_REPORT.md')
@@ -304,8 +349,8 @@ class ResultVisualizer:
         # Create performance comparison
         self.plot_performance_comparison()
         
-        # Note: Distribution plots would require parsing actual output files
-        # which may not exist in this test environment
+        # Generate in-degree distribution plots from embedded results
+        self.generate_distribution_plots()
         
         # Generate report
         self.generate_report()

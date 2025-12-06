@@ -1,6 +1,6 @@
 # In-Degree Distribution Analysis Report
 
-**Generated:** 2025-11-30T15:35:13.945255
+**Generated:** 2025-12-06T07:31:58.723099
 
 ## Experiment Results
 
@@ -8,10 +8,10 @@
 
 | Dataset | Hadoop MapReduce | Apache Spark | Speedup |
 |---------|------------------|--------------|----------|
-| cit-Patents | 71.68s | 23.02s | 3.11x |
-| email-EuAll | 33.63s | 5.30s | 6.34x |
-| soc-LiveJournal1 | 146.54s | 34.46s | 4.25x |
-| soc-Pokec | 81.99s | 21.09s | 3.89x |
+| cit-Patents | 71.64s | 40.16s | 1.78x |
+| email-EuAll | 35.08s | 7.34s | 4.78x |
+| soc-LiveJournal1 | 153.09s | 111.63s | 1.37x |
+| soc-Pokec | 83.55s | 49.98s | 1.67x |
 
 ### Statistics
 

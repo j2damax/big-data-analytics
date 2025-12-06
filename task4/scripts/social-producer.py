@@ -34,7 +34,7 @@ def main():
     twitter_topic = os.getenv('TWITTER_TOPIC', 'twitter_posts')
     tiktok_topic = os.getenv('TIKTOK_TOPIC', 'tiktok_posts')
     twitter_csv = os.getenv('TWITTER_CSV', '../data/processed/twitter-dataset.csv')
-    tiktok_csv = os.getenv('TIKTOK_CSV', '../data/processed/processed/tiktok-dataset.csv')
+    tiktok_csv = os.getenv('TIKTOK_CSV', '../data/processed/tiktok-dataset.csv')
     interval_ms = int(os.getenv('SEND_INTERVAL_MS', '200'))
     sleep_sec = interval_ms / 1000.0
 

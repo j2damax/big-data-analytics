@@ -69,7 +69,7 @@ indegree-hadoop: ## Run Hadoop in-degree on email-EuAll (test dataset)
 
 indegree-spark: ## Run Spark in-degree on email-EuAll (test dataset)
 	docker exec spark-master spark-submit \
-		--master local[*] \
+		--master spark://spark-master:7077 \
 		/scripts/indegree_analysis/spark_indegree.py \
 		hdfs://hadoop:9000/user/root/snap_datasets/email-euall/email-euall.txt
 
@@ -98,7 +98,7 @@ indegree-experiments-scaling:
 		--output-dir /scripts/indegree_analysis/results
 
 indegree-experiments-hadoop:
-	@echo "Processing small datasets using Hadoop..."
+	@echo "Processing All datasets using Hadoop..."
 	-docker exec hadoop python3 /scripts/indegree_analysis/run_experiments.py \
 		--framework hadoop \
 		--datasets all \

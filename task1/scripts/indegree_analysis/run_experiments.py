@@ -286,7 +286,7 @@ class ExperimentRunner:
             # Run Spark job
             cmd = [
                 'spark-submit',
-                '--master', 'local[*]',
+                '--master', 'spark://spark-master:7077',
                 '/scripts/indegree_analysis/spark_indegree.py',
                 input_path,
                 '--output', output_path
