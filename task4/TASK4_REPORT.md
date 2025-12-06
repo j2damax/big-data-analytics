@@ -2,7 +2,7 @@
 
 **MSc in Data Science - Big Data Module Coursework Report**
 
-**Date:** December 6, 2025
+**Date:** December 6, 2024
 
 ---
 
@@ -918,15 +918,20 @@ The concepts learned here apply broadly to:
 
 ### Related Research Papers
 
-1. **The Dataflow Model** (Google, 2015)
-   - Foundational paper on stream processing semantics
-   - Introduced watermark concepts
+1. **The Dataflow Model: A Practical Approach to Balancing Correctness, Latency, and Cost in Massive-Scale, Unbounded, Out-of-Order Data Processing**
+   - Authors: Tyler Akidau, Robert Bradshaw, Craig Chambers, et al.
+   - Published: Proceedings of the VLDB Endowment, Volume 8, Issue 12, 2015
+   - Foundational paper on stream processing semantics and watermark concepts
 
-2. **State Management in Apache Flink** (2017)
-   - Explains Flink's approach to stateful stream processing
+2. **State Management in Apache Flink: Consistent Stateful Distributed Stream Processing**
+   - Authors: Paris Carbone, Stephan Ewen, Gyula Fóra, Seif Haridi, Stefan Richter, Kostas Tzoumas
+   - Published: Proceedings of the VLDB Endowment, Volume 10, Issue 12, 2017
+   - Explains Flink's approach to stateful stream processing with fault tolerance
 
-3. **Streaming Systems** (Tyler Akidau et al., 2018)
-   - Comprehensive book on stream processing concepts
+3. **Streaming Systems: The What, Where, When, and How of Large-Scale Data Processing**
+   - Authors: Tyler Akidau, Slava Chernyak, Reuven Lax
+   - Publisher: O'Reilly Media, 2018
+   - Comprehensive book covering stream processing concepts, watermarks, and windowing
 
 ### Academic Context
 
