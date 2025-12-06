@@ -1,6 +1,19 @@
-Run below commands
+## Overview
+- Kafka producers stream TikTok/Twitter CSVs; Flink Java jobs compute hashtag metrics.
 
-```shell
+## Dependencies
+- Python packages for helper scripts: see `requirements.txt`
+- Java/Maven for Flink jobs: see `java/pom.xml`
+
+## Setup (Python helpers)
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Quick Start
+```bash
 make up
 make prepare
 make flink-submit-tiktok

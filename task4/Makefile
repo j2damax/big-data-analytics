@@ -40,8 +40,5 @@ java-build:
 flink-submit-tiktok: java-build
 	docker exec flink-jobmanager bash -c "HASHTAG=SAE bash /scripts/submit-flink-tiktok-java.sh"
 
-start-producer:
-	docker exec -d social-producer bash /scripts/start-producer.sh
-
 flink-submit-twitter: java-build ## Submit Twitter hashtag job (uses same jar, different main class)
 	docker exec flink-jobmanager bash -c "HASHTAG=SAE bash /scripts/submit-flink-twitter-java.sh"

@@ -1,0 +1,4 @@
+pyspark
+mrjob
+matplotlib
+numpy

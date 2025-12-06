@@ -11,6 +11,16 @@ This folder contains the implementation and runner scripts to compute node in-de
 - Docker and Docker Compose installed.
 - Python 3.11 with virtualenv (optional for local helper scripts).
 
+## Dependencies
+- Python packages for scripts: see `requirements.txt`
+
+### Install (optional, for local runs)
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
 ## Quick Start
 1. Start services:
    ```sh

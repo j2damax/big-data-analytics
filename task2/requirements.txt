@@ -1,0 +1,4 @@
+quixstreams
+kafka-python
+psycopg2-binary
+sodapy

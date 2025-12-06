@@ -102,7 +102,7 @@ public class TikTokHashtagJob {
                 .withTimestampAssigner((element, recordTimestamp) -> {
                     try {
                         Map<String, Object> m = MAPPER.readValue(element, new TypeReference<Map<String, Object>>() {});
-                        Object dateCreated = m.get("date_posted");
+                        Object dateCreated = m.get("date_created");
                         if (dateCreated instanceof String) {
                             long timestamp = parseIsoMillis((String) dateCreated);
                             if (timestamp > 0) {

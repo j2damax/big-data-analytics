@@ -64,6 +64,10 @@ docker run -d \
 
 ---
 
+## Dependencies
+- No Python runtime required. Docker + Neo4j only.
+- For completeness, `requirements.txt` is empty.
+
 ## Data Model
 
 ### Nodes
