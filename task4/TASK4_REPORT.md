@@ -517,6 +517,7 @@ private static boolean containsHashtag(Map<String, Object> record, String hashta
     // Check hashtags array field
     Object h = record.get("hashtags");
     if (h instanceof String) {
+        String hs = (String) h;
         List<String> arr = MAPPER.readValue(hs, new TypeReference<List<String>>() {});
         for (String it : arr) {
             if (it.replace("#", "").toLowerCase().equals(tagNorm)) {
