@@ -1,5 +1,6 @@
 package org.example.task4;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -33,29 +34,22 @@ public class TikTokHashtagJob {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Logger LOG = LoggerFactory.getLogger(TikTokHashtagJob.class);
 
-    private static final DateTimeFormatter ISO_FORMAT_1 = new DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-            .toFormatter(Locale.ROOT)
-            .withZone(ZoneOffset.UTC);
-
-    private static final DateTimeFormatter ISO_FORMAT_2 = new DateTimeFormatterBuilder()
-            .appendPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    private static final DateTimeFormatter ISO_FORMAT_3 = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd HH:mm:ss")
             .optionalStart()
             .appendFraction(ChronoField.MILLI_OF_SECOND, 0, 3, true)
             .optionalEnd()
-            .toFormatter(Locale.ROOT)
-            .withZone(ZoneOffset.UTC);
+            .appendPattern("XXX")
+            .toFormatter(Locale.ROOT);
+
 
     private static long parseIsoMillis(String s) {
         if (s == null) return -1L;
         s = s.trim().replace("\"", "");
         try {
-            return Instant.from(ISO_FORMAT_1.parse(s)).toEpochMilli();
+            return Instant.from(ISO_FORMAT_3.parse(s)).toEpochMilli();
         } catch (Exception ignore) {
-        }
-        try {
-            return Instant.from(ISO_FORMAT_2.parse(s)).toEpochMilli();
-        } catch (Exception ignore) {
+            LOG.warn("Failed to parse ISO date with millis: " + s);
         }
         return -1L;
     }
@@ -100,20 +94,17 @@ public class TikTokHashtagJob {
                 .<String>forBoundedOutOfOrderness(Duration.ofSeconds(latenessSec))
                 .withIdleness(Duration.ofSeconds(10))  // Close windows if no data for 10 seconds
                 .withTimestampAssigner((element, recordTimestamp) -> {
+                    Map<String, Object> m = null;
                     try {
-                        Map<String, Object> m = MAPPER.readValue(element, new TypeReference<Map<String, Object>>() {});
+                        m = MAPPER.readValue(element, new TypeReference<Map<String, Object>>() {});
                         Object dateCreated = m.get("date_created");
                         if (dateCreated instanceof String) {
-                            long timestamp = parseIsoMillis((String) dateCreated);
-                            if (timestamp > 0) {
-                                return timestamp;
-                            }
+                            return parseIsoMillis((String) dateCreated);
                         }
-                    } catch (Exception e) {
-                        LOG.warn("Failed to extract timestamp from element, using record timestamp", e);
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
                     }
-                    // Fallback to Kafka record timestamp
-                    return recordTimestamp;
+                    return -2;
                 });
 
         // Apply watermark strategy directly when creating the source stream
@@ -124,44 +115,38 @@ public class TikTokHashtagJob {
                 .flatMap((String s, Collector<Map<String, Object>> out) -> {
                     try {
                         Map<String, Object> m = MAPPER.readValue(s, new TypeReference<Map<String, Object>>() {});
-                        if (LOG.isTraceEnabled()) {
-                            LOG.trace("Parsed JSON: {}", s);
+                        // Early filtering: only emit if contains the hashtag
+                        if (m != null && !m.isEmpty() && containsHashtag(m, hashtag)) {
+                            out.collect(m);
                         }
-                        out.collect(m);
                     } catch (Exception e) {
                         String preview = s == null ? "null" : (s.length() > 200 ? s.substring(0, 200) + "..." : s);
                         LOG.warn("Failed to parse JSON message, skipping. Preview='{}'", preview, e);
                     }
                 })
                 .returns(new TypeHint<Map<String, Object>>() {})
-                .name("to-json-map");
+                .name("filter-hashtag");
 
-        // Check for hashtag and emit count
-        SingleOutputStreamOperator<Tuple2<String, Integer>> keyedOnConst = mapped
-                .map(m -> {
-                    boolean ok = m != null && !m.isEmpty() && containsHashtag(m, hashtag);
-                    if (ok && LOG.isDebugEnabled()) {
-                        LOG.debug("Matched hashtag #{} for record id={} ts={}", hashtag, m.get("id"), m.get("date_created"));
-                    }
-                    return Tuple2.of(hashtag, ok ? 1 : 0);
-                })
-                .returns(new TypeHint<Tuple2<String, Integer>>() {})
-                .name("check-hashtag");
+        // Map to count (just emit 1 for each matching record)
+        SingleOutputStreamOperator<Integer> counts = mapped
+                .map(m -> 1)
+                .returns(Integer.class)
+                .name("map-to-one");
 
-        // Key by hashtag
-        KeyedStream<Tuple2<String, Integer>, String> keyed = keyedOnConst.keyBy(t -> t.f0);
+        // Key by a constant to enable windowing (all records go to same key)
+        KeyedStream<Integer, String> keyed = counts.keyBy(val -> hashtag);
 
-        // Apply tumbling window and aggregate counts
-        SingleOutputStreamOperator<Tuple2<String, Integer>> windowed = keyed
+        // Apply tumbling window and sum counts
+        SingleOutputStreamOperator<Integer> windowed = keyed
                 .window(TumblingEventTimeWindows.of(Duration.ofSeconds(windowSec)))
-                .reduce((a, b) -> Tuple2.of(a.f0, a.f1 + b.f1))
+                .reduce(Integer::sum)
                 .name("window-aggregate");
 
-        // Format output and write to file sink
+        // Format output and print
         windowed
-                .map(kv -> {
+                .map(count -> {
                     String out = String.format("[TikTokHashtagCount] hashtag=#%s window=%ds count=%d", 
-                            hashtag, windowSec, kv.f1);
+                            hashtag, windowSec, count);
                     LOG.info(out);
                     return out;
                 })

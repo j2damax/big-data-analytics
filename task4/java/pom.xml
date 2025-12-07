@@ -7,12 +7,12 @@
     <groupId>org.example</groupId>
     <artifactId>task4-flink-jobs</artifactId>
     <version>1.0.0</version>
-    <name>Task4 Flink Jobs (Java 17)</name>
+    <name>Task4 Flink Jobs (Java 21)</name>
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flink.version>1.20.0</flink.version>
+        <flink.version>2.1.1</flink.version>
         <jackson.version>2.17.2</jackson.version>
         <slf4j.version>2.0.7</slf4j.version>
     </properties>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-connector-kafka</artifactId>
-            <version>3.4.0-1.20</version>
+            <version>4.0.1-2.0</version>
         </dependency>
 
         <!-- Jackson for JSON parsing (shaded into JAR) -->
@@ -70,7 +70,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -81,7 +80,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.11.0</version>
                 <configuration>
-                    <release>17</release>
+                    <release>21</release>
                 </configuration>
             </plugin>
             <plugin>

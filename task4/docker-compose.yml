@@ -74,13 +74,14 @@ services:
 
   # Flink JobManager
   flink-jobmanager:
-    image: flink:1.20.0-java17
+    image: flink:scala_2.12-java21
     hostname: flink-jobmanager
     container_name: flink-jobmanager
     ports:
       - "8082:8081"  # Flink Web UI (mapped to 8082 to avoid conflict)
     environment:
       - JOB_MANAGER_RPC_ADDRESS=flink-jobmanager
+      - ROOT_LOG_LEVE=DEBUG
     volumes:
       - ./scripts:/scripts
       - ./data:/data
@@ -91,13 +92,14 @@ services:
 
   # Flink TaskManager
   flink-taskmanager:
-    image: flink:1.20.0-java17
+    image: flink:scala_2.12-java21
     hostname: flink-taskmanager
     scale: 2
     depends_on:
       - flink-jobmanager
     environment:
       - JOB_MANAGER_RPC_ADDRESS=flink-jobmanager
+      - ROOT_LOG_LEVE=DEBUG
     volumes:
       - ./scripts:/scripts
       - ./data:/data

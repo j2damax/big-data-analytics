@@ -33,7 +33,7 @@ java-build:
 	  -v $(CURDIR)/java:/app \
 	  -v $$HOME/.m2:/root/.m2 \
 	  -w /app \
-	  maven:3.9-amazoncorretto-17 \
+	  maven:3.9-amazoncorretto-21 \
 	  mvn -DskipTests package
 	@echo "Built Java Flink jobs JAR at task4/java/target/task4-flink-jobs-1.0.0.jar"
 
