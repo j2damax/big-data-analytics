@@ -208,6 +208,7 @@ class ExperimentRunner:
             
             metrics = {
                 'framework': 'Hadoop MapReduce',
+                'optimization': 'Combiner enabled for local aggregation',
                 'dataset': dataset_name,
                 'input_path': input_path,
                 'output_path': output_path,
@@ -308,6 +309,7 @@ class ExperimentRunner:
             # Parse output for statistics
             metrics = {
                 'framework': 'Apache Spark',
+                'optimization': 'Reduced shuffle partitions to 64',
                 'dataset': dataset_name,
                 'input_path': input_path,
                 'output_path': output_path,

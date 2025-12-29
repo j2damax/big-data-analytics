@@ -33,16 +33,22 @@ class MRInDegree(MRJob):
         if self.options.output_indegree:
             # Just compute in-degree for each node
             return [
-                MRStep(mapper=self.mapper_count_indegree,
-                      reducer=self.reducer_sum_indegree)
+                MRStep(
+                    mapper=self.mapper_count_indegree,
+                    combiner=self.reducer_sum_indegree,
+                    reducer=self.reducer_sum_indegree
+                )
             ]
         else:
             # Compute in-degree distribution
             return [
-                MRStep(mapper=self.mapper_count_indegree,
-                      reducer=self.reducer_sum_indegree),
+                MRStep(
+                    mapper=self.mapper_count_indegree,
+                    combiner=self.reducer_sum_indegree,
+                    reducer=self.reducer_sum_indegree
+                ),
                 MRStep(mapper=self.mapper_degree_distribution,
-                      reducer=self.reducer_count_distribution)
+                       reducer=self.reducer_count_distribution)
             ]
     
     def mapper_count_indegree(self, _, line):

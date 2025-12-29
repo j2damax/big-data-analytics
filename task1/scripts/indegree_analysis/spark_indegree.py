@@ -30,7 +30,9 @@ class SparkInDegree:
         self.output_indegree = output_indegree
         
         # Create Spark configuration
-        conf = SparkConf().setAppName("Spark-InDegree-Analysis")
+        conf = SparkConf() \
+            .setAppName("Spark-InDegree-Analysis") \
+            .set("spark.sql.shuffle.partitions", "64")
         
         # Initialize Spark Session
         self.spark = SparkSession.builder \
