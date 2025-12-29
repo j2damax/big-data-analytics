@@ -47,8 +47,10 @@ class MRInDegree(MRJob):
                     combiner=self.reducer_sum_indegree,
                     reducer=self.reducer_sum_indegree
                 ),
-                MRStep(mapper=self.mapper_degree_distribution,
-                       reducer=self.reducer_count_distribution)
+                MRStep(
+                    mapper=self.mapper_degree_distribution,
+                    reducer=self.reducer_count_distribution
+                )
             ]
     
     def mapper_count_indegree(self, _, line):
