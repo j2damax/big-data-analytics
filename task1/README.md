@@ -57,4 +57,5 @@ pip install -r requirements.txt
 ## Scalability & Optimization Notes (Task 1 / Part 2)
 - Hadoop MapReduce: A combiner is enabled in `hadoop_indegree.py` to aggregate counts locally before the shuffle phase, reducing network I/O for large datasets.
 - Apache Spark: Shuffle partitions are tuned to 64 in `spark_indegree.py` to lower shuffle overhead on the small cluster used by the provided Docker compose setup.
-- The experiment runner already records execution time and basic stats per framework in `scripts/indegree_analysis/results/experiment_results.json`; re-run `run_experiments.py` (or `make indegree-hadoop` / `make indegree-spark`) to compare timings before/after these optimizations.
+- The experiment runner records execution time and basic stats per framework in `scripts/indegree_analysis/results/experiment_results.json`.
+- Re-run `run_experiments.py` (or `make indegree-hadoop` / `make indegree-spark`) to compare timings before and after these optimizations.
