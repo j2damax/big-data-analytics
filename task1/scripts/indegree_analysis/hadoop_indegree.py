@@ -49,6 +49,7 @@ class MRInDegree(MRJob):
                 ),
                 MRStep(
                     mapper=self.mapper_degree_distribution,
+                    combiner=self.reducer_count_distribution,
                     reducer=self.reducer_count_distribution
                 )
             ]
